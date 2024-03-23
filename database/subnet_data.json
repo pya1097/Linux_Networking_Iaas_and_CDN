@@ -1,0 +1,38 @@
+{
+    "mary": {
+        "name": "mary",
+        "customer_id": 2,
+        "details": [
+            {
+                "vpc_name": "VPC1",
+                "vpc_id": 2,
+                "subnet_details": [
+                    {
+                        "subnet_name": "subnet1",
+                        "subnet_range_start": "192.168.151.2",
+                        "subnet_range_end": "192.168.151.254",
+                        "subnet_id": 1
+                    },
+                    {
+                        "subnet_name": "subnet3",
+                        "subnet_range_start": "192.168.153.2",
+                        "subnet_range_end": "192.168.153.254",
+                        "subnet_id": 2
+                    }
+                ]
+            },
+            {
+                "vpc_name": "VPC2",
+                "vpc_id": 1,
+                "subnet_details": [
+                    {
+                        "subnet_name": "subnet2",
+                        "subnet_range_start": "192.168.152.2",
+                        "subnet_range_end": "192.168.152.254",
+                        "subnet_id": 1
+                    }
+                ]
+            }
+        ]
+    }
+}

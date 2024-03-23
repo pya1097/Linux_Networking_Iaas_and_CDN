@@ -1,0 +1,22 @@
+{
+    "john": {
+        "name": "john",
+        "details": [
+            {
+                "customer_pwd": "jn",
+                "customer_addr": "dhfjsdhf"
+            }
+        ],
+        "customer_id": 1
+    },
+    "mary": {
+        "name": "mary",
+        "details": [
+            {
+                "customer_pwd": "jndsd",
+                "customer_addr": "dasffsdds"
+            }
+        ],
+        "customer_id": 2
+    }
+}

@@ -1,0 +1,10 @@
+name: Enter your name
+customer_id: Enter your ID
+details:
+  - vpc_name: Enter your VPC name
+    vpc_id: Enter your VPC ID
+    subnet_details:
+      - subnet_name:  Enter subnet name
+        subnet_range_start: 192.168.x.y
+        subnet_range_end: 192.168.x.z
+  

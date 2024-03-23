@@ -1,0 +1,7 @@
+name: Enter your name
+customer_id: Enter your ID
+details:
+  - vpc_name:  Enter VPC name
+    dns: False
+  - vpc_name: Enter VPC name
+    dns: False
