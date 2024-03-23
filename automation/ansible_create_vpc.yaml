@@ -1,0 +1,85 @@
+---
+- name: Create a Customer Router Namespace
+  hosts: localhost
+  gather_facts: no
+  vars:
+    vpc_details:
+      - name: c1 
+        vpcs: 
+          - vpc_name: vpc1
+            host_ip: 10.10.3.1
+            host_ep_ip: 10.10.3.1/30
+            ns_ep_ip: 10.10.3.2/30
+            ip: 10.10.3.0/30
+          - vpc_name: vpc2
+            host_ip: 10.10.4.1
+            host_ep_ip: 10.10.4.1/30
+            ns_ep_ip: 10.10.4.2/30
+            ip: 10.10.4.0/30
+      - name: c2
+        vpcs: 
+          - vpc_name: vpc2
+            host_ip: 10.10.5.1
+            host_ep_ip: 10.10.5.1/30
+            ns_ep_ip: 10.10.5.2/30
+            ip: 10.10.5.0/30
+
+
+  tasks:
+    - name: Create Namespaces
+      become: yes
+      community.general.ip_netns:
+        name: "{{ item.0.name }}_{{ item.1.vpc_name }}"
+        state: present
+      loop: "{{ vpc_details|subelements('vpcs') }}"
+      loop_control:
+        label: "{{ item.0.name }}"
+    
+    - name: Creat veth pairs
+      become: yes
+      ansible.builtin.command: "sudo ip link add {{ item.0.name }}_{{ item.1.vpc_name }}_host type veth peer name {{ item.0.name }}_{{ item.1.vpc_name }}_ns"
+      loop: "{{ vpc_details|subelements('vpcs') }}"
+      loop_control:
+        label: "{{ item.0.name }}"
+
+    - name: Attach NS to the ns ends of the veth pairs
+      ansible.builtin.command: "sudo ip link set {{ item.0.name }}_{{ item.1.vpc_name }}_ns netns {{ item.0.name }}_{{ item.1.vpc_name }}"
+      loop: "{{ vpc_details|subelements('vpcs') }}"
+      loop_control:
+        label: "{{ item.0.name }}"
+
+    - name: Ensure that NS interface is UP
+      ansible.builtin.command: "sudo ip netns exec {{ item.0.name }}_{{ item.1.vpc_name }} ip link set {{ item.0.name }}_{{ item.1.vpc_name }}_ns up"
+      loop: "{{ vpc_details|subelements('vpcs') }}"
+      loop_control:
+        label: "{{ item.0.name }}"
+
+    - name: Ensure that host interface is UP
+      ansible.builtin.command: "sudo ip link set {{ item.0.name }}_{{ item.1.vpc_name }}_host up"
+      loop: "{{ vpc_details|subelements('vpcs') }}"
+      loop_control:
+        label: "{{ item.0.name }}"
+
+    - name: Assign IP address to each veth endpoint interface- host
+      ansible.builtin.command: "sudo ip addr add {{ item.1.host_ep_ip }} dev {{ item.0.name }}_{{ item.1.vpc_name }}_host"
+      loop: "{{ vpc_details|subelements('vpcs') }}"
+      loop_control:
+        label: "{{ item.0.name }}"
+
+    - name: Assign IP address to each veth endpoint interface- namespace
+      ansible.builtin.command: "sudo ip netns exec {{ item.0.name }}_{{ item.1.vpc_name }} ip addr add {{ item.1.ns_ep_ip }} dev {{ item.0.name }}_{{ item.1.vpc_name }}_ns"
+      loop: "{{ vpc_details|subelements('vpcs') }}"
+      loop_control:
+        label: "{{ item.0.name }}"
+
+    - name: Add default route to the NS
+      ansible.builtin.command: "sudo ip netns exec {{ item.0.name }}_{{ item.1.vpc_name }} ip route add default via {{ item.1.host_ip }} dev {{ item.0.name }}_{{ item.1.vpc_name }}_ns"
+      loop: "{{ vpc_details|subelements('vpcs') }}"
+      loop_control:
+        label: "{{ item.0.name }}"
+
+    - name: Configure IP table rule
+      ansible.builtin.command: "sudo iptables -t nat -I POSTROUTING 1 -s {{ item.1.ip }} ! -d {{ item.1.ip }} -o eth0 -j MASQUERADE"
+      loop: "{{ vpc_details|subelements('vpcs') }}"
+      loop_control:
+        label: "{{ item.0.name }}"
