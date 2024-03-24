@@ -2,27 +2,30 @@
 - name: Create a Customer Router Namespace
   hosts: localhost
   gather_facts: no
-  vars:
-    vpc_details:
-      - name: c1 
-        vpcs: 
-          - vpc_name: vpc1
-            host_ip: 10.10.3.1
-            host_ep_ip: 10.10.3.1/30
-            ns_ep_ip: 10.10.3.2/30
-            ip: 10.10.3.0/30
-          - vpc_name: vpc2
-            host_ip: 10.10.4.1
-            host_ep_ip: 10.10.4.1/30
-            ns_ep_ip: 10.10.4.2/30
-            ip: 10.10.4.0/30
-      - name: c2
-        vpcs: 
-          - vpc_name: vpc2
-            host_ip: 10.10.5.1
-            host_ep_ip: 10.10.5.1/30
-            ns_ep_ip: 10.10.5.2/30
-            ip: 10.10.5.0/30
+  vars_files:
+    - variables/create_vpc_variables.yml
+  # vars:
+  #   vpc_details:
+  #     - name: c1 
+  #       vpcs: 
+  #         - vpc_name: vpc1
+  #           host_ip: 10.10.3.1
+  #           host_ep_ip: 10.10.3.1/30
+  #           ns_ep_ip: 10.10.3.2/30
+  #           ip: 10.10.3.0/30
+  #         - vpc_name: vpc2
+  #           host_ip: 10.10.4.1
+  #           host_ep_ip: 10.10.4.1/30
+  #           ns_ep_ip: 10.10.4.2/30
+  #           ip: 10.10.4.0/30
+  #     - name: c2
+  #       vpcs: 
+  #         - vpc_name: vpc2
+  #           host_ip: 10.10.5.1
+  #           host_ep_ip: 10.10.5.1/30
+  #           ns_ep_ip: 10.10.5.2/30
+  #           ip: 10.10.5.0/30
+
 
 
   tasks:
