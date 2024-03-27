@@ -50,48 +50,48 @@
 
   #-----------------------------------VM CREATION-----------------------------------------------------
 
-    - name: Create directory for VM
-      become: yes
-      file:
-        path: "/var/lib/libvirt/images/{{ vm_name }}"
-        state: directory
-        mode: '0755'
+    # - name: Create directory for VM
+    #   become: yes
+    #   file:
+    #     path: "/var/lib/libvirt/images/{{ vm_name }}"
+    #     state: directory
+    #     mode: '0755'
 
-    - name: Create QCOW2 image for VM
-      become: yes
-      command: qemu-img create -f qcow2 -F qcow2 -o backing_file=/var/lib/libvirt/images/jammy-server-cloudimg-amd64.img "/var/lib/libvirt/images/{{ vm_name }}/{{ vm_name }}.qcow2"
+    # - name: Create QCOW2 image for VM
+    #   become: yes
+    #   command: qemu-img create -f qcow2 -F qcow2 -o backing_file=/var/lib/libvirt/images/jammy-server-cloudimg-amd64.img "/var/lib/libvirt/images/{{ vm_name }}/{{ vm_name }}.qcow2"
 
-    - name: Resize image
-      become: yes
-      command: qemu-img resize "/var/lib/libvirt/images/{{ vm_name }}/{{ vm_name }}.qcow2" 12G
+    # - name: Resize image
+    #   become: yes
+    #   command: qemu-img resize "/var/lib/libvirt/images/{{ vm_name }}/{{ vm_name }}.qcow2" 12G
 
-    - name: Create meta data files
-      ansible.builtin.template:
-        src: "{{ template_dir }}/meta_data.j2"
-        dest: "/var/lib/libvirt/images/{{ vm_name }}/meta-data"
-      become: yes
+    # - name: Create meta data files
+    #   ansible.builtin.template:
+    #     src: "{{ template_dir }}/meta_data.j2"
+    #     dest: "/var/lib/libvirt/images/{{ vm_name }}/meta-data"
+    #   become: yes
 
-    - name: Create user data file
-      template:
-        src: "{{ template_dir }}/user_data.j2"
-        dest: "/var/lib/libvirt/images/{{ vm_name }}/user-data"
-      become: yes    
+    # - name: Create user data file
+    #   template:
+    #     src: "{{ template_dir }}/user_data.j2"
+    #     dest: "/var/lib/libvirt/images/{{ vm_name }}/user-data"
+    #   become: yes    
 
-    - name: Run genisoimage command
-      command: genisoimage -output "/var/lib/libvirt/images/{{ vm_name }}/{{ vm_name }}-cidata.iso" -volid cidata -joliet -rock meta-data user-data
-      args:
-        chdir: "/var/lib/libvirt/images/{{ vm_name }}"
-      become: yes
-
-
-    - name: Generate XML files for VM definitions
-      template:
-        src: "{{ template_dir }}/vm_definition.j2"
-        dest: "{{ script_files_dir }}/{{ vm_name }}/{{ vm_name }}.xml"
+    # - name: Run genisoimage command
+    #   command: genisoimage -output "/var/lib/libvirt/images/{{ vm_name }}/{{ vm_name }}-cidata.iso" -volid cidata -joliet -rock meta-data user-data
+    #   args:
+    #     chdir: "/var/lib/libvirt/images/{{ vm_name }}"
+    #   become: yes
 
 
-    - name: create and start a VM
-      command: virsh create  "{{ script_files_dir }}/{{ vm_name }}/{{ vm_name }}.xml"
+    # - name: Generate XML files for VM definitions
+    #   template:
+    #     src: "{{ template_dir }}/vm_definition.j2"
+    #     dest: "{{ script_files_dir }}/{{ vm_name }}/{{ vm_name }}.xml"
+
+
+    # - name: create and start a VM
+    #   command: virsh create  "{{ script_files_dir }}/{{ vm_name }}/{{ vm_name }}.xml"
     
    #----------------------------------- NAMESPACE Connection ---------------------------------------------------- 
     - name: Creat veth pairs between bridge and NS
