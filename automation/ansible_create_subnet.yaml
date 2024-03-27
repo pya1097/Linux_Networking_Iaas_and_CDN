@@ -12,13 +12,12 @@
   vars:
     vpc_id: c1v1
     br_id: bc1v1s1
-    veth_br_inf: ve_bc1v1s1_b
-    veth_ns_inf: ve_bc1v1s1_v
-    network_name: nc1v1s1
+    veth_brns_br_inf: ve_bc1v1s1_b
+    veth_brns_ns_inf: ve_bc1v1s1_v
+    network_id: nc1v1s1
     veth_ns_ep_ip: 10.10.10.1/30 #{{ subnet_prefix }}.1/30
-    subnet_ip: 10.10.10.1
     prefix_ip: 10.10.10.0/30
-    vm_name: vm1c1v1s1
+    vm_id: vm1c1v1s1
     interface_name: enp1s0
     interface_address: 10.10.10.2/30
     template_dir: "/home/vmadm/project/automation/jinja_templates"
@@ -31,7 +30,7 @@
   #-----------------------------------BRIDGE CREATION----------------------------------------------
     - name: Create the directory
       ansible.builtin.file:
-        path: "{{ script_files_dir }}/{{ vm_name }}"
+        path: "{{ script_files_dir }}/{{ vm_id }}"
         state: directory
 
     - name: Create a Linux Bride
@@ -46,35 +45,35 @@
     - name: Copy network XML files to libvirt directory
       template:
         src: "{{ template_dir }}/network_definition.j2"
-        dest: "{{ script_files_dir }}/{{ vm_name }}/{{ network_name }}.xml"
+        dest: "{{ script_files_dir }}/{{ vm_id }}/{{ network_id }}.xml"
 
     - name: Define network using virsh
-      command: virsh net-define "{{ script_files_dir }}/{{ vm_name }}/{{ network_name }}.xml"
+      command: virsh net-define "{{ script_files_dir }}/{{ vm_id }}/{{ network_id }}.xml"
       become: yes
 
     - name: Start the defined network
-      command: "virsh net-start {{ network_name }}"
+      command: "virsh net-start {{ network_id }}"
       become: yes
 
    #----------------------------------- NAMESPACE Connection ---------------------------------------------------- 
     - name: Creat veth pairs between bridge and NS
       become: yes
-      ansible.builtin.command: "sudo ip link add {{ veth_br_inf }} type veth peer name {{ veth_ns_inf }}"
+      ansible.builtin.command: "sudo ip link add {{ veth_brns_br_inf }} type veth peer name {{ veth_brns_ns_inf }}"
   
     - name: Attach NS to the ns ends of the veth pairs
-      ansible.builtin.command: "sudo ip link set {{ veth_ns_inf }} netns {{ vpc_id }}"
+      ansible.builtin.command: "sudo ip link set {{ veth_brns_ns_inf }} netns {{ vpc_id }}"
     
     - name: Ensure that NS interface is UP
-      ansible.builtin.command: "sudo ip netns exec {{ vpc_id }} ip link set {{ veth_ns_inf }} up"
+      ansible.builtin.command: "sudo ip netns exec {{ vpc_id }} ip link set {{ veth_brns_ns_inf }} up"
 
     - name: Attach bridge endpoint to the br end
-      ansible.builtin.command: "sudo ip link set {{ veth_br_inf }} master {{ br_id }}"
+      ansible.builtin.command: "sudo ip link set {{ veth_brns_br_inf }} master {{ br_id }}"
     
     - name: Ensure that bridge interface is UP
-      ansible.builtin.command: "sudo ip link set {{ veth_br_inf }} up"
+      ansible.builtin.command: "sudo ip link set {{ veth_brns_br_inf }} up"
 
     - name: Assign IP address to veth vpc endpoint interface
-      ansible.builtin.command: "sudo ip netns exec {{ vpc_id }} ip addr add {{ veth_ns_ep_ip }} dev {{ br_id }}_nsi"
+      ansible.builtin.command: "sudo ip netns exec {{ vpc_id }} ip addr add {{ veth_ns_ep_ip }} dev {{ veth_brns_ns_inf }}"
 
     - name: Add NS IP rule for SNAT
       ansible.builtin.command: "sudo ip netns exec {{ vpc_id }} iptables -t nat -I POSTROUTING 1 -s {{ prefix_ip }} -o {{ vpc_id }}_ns ! -d {{ prefix_ip }} -j MASQUERADE"
