@@ -5,6 +5,7 @@
 #n = network
 #ve = veth
 #vm = virtual machine
+#ns = public namespace
 ---
 - name: Provision a new subnet in a VPC
   hosts: localhost
@@ -12,18 +13,15 @@
   vars:
     vpc_id: c1v1
     br_id: bc1v1s1
-    veth_brns_br_inf: ve_bc1v1s1_b
-    veth_brns_ns_inf: ve_bc1v1s1_v
+    veth_brv_br_inf: ve_bc1v1s1_b
+    veth_brv_v_inf: ve_bc1v1s1_v
+    veth_vns_v_inf: ve_c1v1s1_v
     network_id: nc1v1s1
     veth_ns_ep_ip: 10.10.10.1/30 #{{ subnet_prefix }}.1/30
     prefix_ip: 10.10.10.0/30
     vm_id: vm1c1v1s1
-    interface_name: enp1s0
-    interface_address: 10.10.10.2/30
     template_dir: "/home/vmadm/project/automation/jinja_templates"
     script_files_dir: "/home/vmadm/project/subnet_files"
-    memory: 1024
-    vcpu: 1
 
   tasks:   
   
@@ -58,22 +56,22 @@
    #----------------------------------- NAMESPACE Connection ---------------------------------------------------- 
     - name: Creat veth pairs between bridge and NS
       become: yes
-      ansible.builtin.command: "sudo ip link add {{ veth_brns_br_inf }} type veth peer name {{ veth_brns_ns_inf }}"
+      ansible.builtin.command: "sudo ip link add {{ veth_brv_br_inf }} type veth peer name {{ veth_brv_v_inf }}"
   
     - name: Attach NS to the ns ends of the veth pairs
-      ansible.builtin.command: "sudo ip link set {{ veth_brns_ns_inf }} netns {{ vpc_id }}"
+      ansible.builtin.command: "sudo ip link set {{ veth_brv_v_inf }} netns {{ vpc_id }}"
     
     - name: Ensure that NS interface is UP
-      ansible.builtin.command: "sudo ip netns exec {{ vpc_id }} ip link set {{ veth_brns_ns_inf }} up"
+      ansible.builtin.command: "sudo ip netns exec {{ vpc_id }} ip link set {{ veth_brv_v_inf }} up"
 
     - name: Attach bridge endpoint to the br end
-      ansible.builtin.command: "sudo ip link set {{ veth_brns_br_inf }} master {{ br_id }}"
+      ansible.builtin.command: "sudo ip link set {{ veth_brv_br_inf }} master {{ br_id }}"
     
     - name: Ensure that bridge interface is UP
-      ansible.builtin.command: "sudo ip link set {{ veth_brns_br_inf }} up"
+      ansible.builtin.command: "sudo ip link set {{ veth_brv_br_inf }} up"
 
     - name: Assign IP address to veth vpc endpoint interface
-      ansible.builtin.command: "sudo ip netns exec {{ vpc_id }} ip addr add {{ veth_ns_ep_ip }} dev {{ veth_brns_ns_inf }}"
+      ansible.builtin.command: "sudo ip netns exec {{ vpc_id }} ip addr add {{ veth_ns_ep_ip }} dev {{ veth_brv_v_inf }}"
 
     - name: Add NS IP rule for SNAT
-      ansible.builtin.command: "sudo ip netns exec {{ vpc_id }} iptables -t nat -I POSTROUTING 1 -s {{ prefix_ip }} -o {{ vpc_id }}_ns ! -d {{ prefix_ip }} -j MASQUERADE"
+      ansible.builtin.command: "sudo ip netns exec {{ vpc_id }} iptables -t nat -I POSTROUTING 1 -s {{ prefix_ip }} -o {{ veth_vns_v_inf }} ! -d {{ prefix_ip }} -j MASQUERADE"
