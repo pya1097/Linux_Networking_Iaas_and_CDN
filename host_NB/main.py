@@ -23,6 +23,7 @@ async def download_file(template_name: str):
 #------------------------------User Details-----------------------------------------------------------
 
 def create_or_update_user_data(yaml_data, json_file):
+    print(yaml_data)
     if os.path.exists(json_file):
         with open(json_file, "r") as file:
             existing_data = json.load(file)
