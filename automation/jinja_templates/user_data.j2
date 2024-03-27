@@ -15,11 +15,17 @@ write_files:
          version: 2
          ethernets:
           {{ interface_name }}:
-           addresses: [ {{ interface_address }} ]
+           addresses: [ {{ vm_ip }} ]
+
+  - path: /root/main.py
+    content: |
+{{ content }}
+
 
 runcmd:
   - ['sh', '-c', 'netplan generate']
   - ['sh', '-c', 'netplan apply']
   - ['sh', '-c', 'apt update']
   - ['sh', '-c', 'sudo ip route add default via  {{ subnet_ip }} dev enp1s0 ']
-  - ['sh', '-c', 'sudo sed -i 's/^nameserver 127\.0\.0\.53/nameserver 8.8.8.8/' /etc/resolv.conf']
+  - ['sh', '-c', 'sudo apt install python3-flask']
+  - ['sh', '-c', 'python3 main.py']

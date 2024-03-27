@@ -3,22 +3,34 @@
   hosts: localhost
   gather_facts: no
   vars:
-    customer_name: c1
-    vpc_name: c1_vpc1
+    vpc_id: c1_vpc1
     bridge_name: c1_vpc1_br1
-    network_name: c1_vpc1_nw1
+    network_name: default
     veth_ns_ep_ip: 10.10.10.1/30
     subnet_ip: 10.10.10.1
     prefix_ip: 10.10.10.0/30
-    vm_name: c1_vpc1_br1_vm1
+    vm_name: vm_test
     interface_name: enp1s0
-    interface_address: 10.10.10.2/30
+    
     template_dir: "/home/vmadm/project/automation/jinja_templates"
     script_files_dir: "/home/vmadm/project/subnet_files"
     memory: 1024
     vcpu: 1
 
+    interface_name: enp1s0
+    vpc_incoming_port: 1234
+    vpc_interface_ip: 10.10.1.2
+    public_router_ip: 2.2.2.2
+    public_router_port: 1234
+    vm_ip: 10.10.10.2/30
+    vm_port: 8080
+
   tasks:   
+    - name: Create the directory
+      ansible.builtin.file:
+        path: "{{ script_files_dir }}/{{ vm_name }}"
+        state: directory
+
     - name: Create directory for VM
       become: yes
       file:
@@ -40,11 +52,25 @@
         dest: "/var/lib/libvirt/images/{{ vm_name }}/meta-data"
       become: yes
 
-    - name: Create user data file
+    - name: Read file and add 4 indents
+      ansible.builtin.shell:
+        cmd: |
+          sed -i 's/^/    /' source.py
+      args:
+        executable: /bin/bash
+
+    - name: Read input from cat command
+      shell: cat source.py
+      register: python_file_content
+      changed_when: false
+
+    - name: Create Jinja2 file
       template:
         src: "{{ template_dir }}/user_data.j2"
         dest: "/var/lib/libvirt/images/{{ vm_name }}/user-data"
-      become: yes    
+      vars:
+        content: "{{ python_file_content.stdout }}"
+
 
     - name: Run genisoimage command
       command: genisoimage -output "/var/lib/libvirt/images/{{ vm_name }}/{{ vm_name }}-cidata.iso" -volid cidata -joliet -rock meta-data user-data
@@ -61,4 +87,11 @@
 
     - name: create and start a VM
       command: virsh create  "{{ script_files_dir }}/{{ vm_name }}/{{ vm_name }}.xml"
-    
+   
+    - name: Add a DNAT rule for the created VM
+      become: yes
+      command: "iptables -t nat -A PREROUTING -p tcp -d {{ vpc_interface_ip }} --dport {{ vpc_incoming_port }} -j DNAT --to-destination {{ vm_ip }}:{{ vm_port }}"
+
+    - name: Add a DNAT rule for public to private router 
+      become: yes
+      command: "iptables -t nat -A PREROUTING -p tcp -d {{ public_router_ip }} --dport {{ public_router_port }} -j DNAT --to-destination {{ vpc_interface_ip }}:{{ vpc_incoming_port }}"
