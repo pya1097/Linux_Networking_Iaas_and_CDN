@@ -1,55 +1,51 @@
 ---
-- name: Provision a new subnet in a VPC
+- name: Provision a new VM in a subnet
   hosts: localhost
   gather_facts: no
   vars:
-    vpc_id: c1_vpc1
-    bridge_name: c1_vpc1_br1
-    network_name: default
-    veth_ns_ep_ip: 10.10.10.1/30
-    subnet_ip: 10.10.10.1
-    prefix_ip: 10.10.10.0/30
-    vm_name: vm_test
-    interface_name: enp1s0
+    network_id: default
+    
+    vm_id: vm_test
     
     template_dir: "/home/vmadm/project/automation/jinja_templates"
     script_files_dir: "/home/vmadm/project/subnet_files"
+
     memory: 1024
     vcpu: 1
 
     interface_name: enp1s0
     vpc_incoming_port: 1234
-    vpc_interface_ip: 10.10.1.2
+    veth_vns_v_inf: 10.10.1.2
     public_router_ip: 2.2.2.2
-    public_router_port: 1234
+    public_router_incoming_port: 1234
     vm_ip: 10.10.10.2/30
     vm_port: 8080
 
   tasks:   
     - name: Create the directory
       ansible.builtin.file:
-        path: "{{ script_files_dir }}/{{ vm_name }}"
+        path: "{{ script_files_dir }}/{{ vm_id }}"
         state: directory
 
     - name: Create directory for VM
       become: yes
       file:
-        path: "/var/lib/libvirt/images/{{ vm_name }}"
+        path: "/var/lib/libvirt/images/{{ vm_id }}"
         state: directory
         mode: '0755'
 
     - name: Create QCOW2 image for VM
       become: yes
-      command: qemu-img create -f qcow2 -F qcow2 -o backing_file=/var/lib/libvirt/images/jammy-server-cloudimg-amd64.img "/var/lib/libvirt/images/{{ vm_name }}/{{ vm_name }}.qcow2"
+      command: qemu-img create -f qcow2 -F qcow2 -o backing_file=/var/lib/libvirt/images/jammy-server-cloudimg-amd64.img "/var/lib/libvirt/images/{{ vm_id }}/{{ vm_id }}.qcow2"
 
     - name: Resize image
       become: yes
-      command: qemu-img resize "/var/lib/libvirt/images/{{ vm_name }}/{{ vm_name }}.qcow2" 12G
+      command: qemu-img resize "/var/lib/libvirt/images/{{ vm_id }}/{{ vm_id }}.qcow2" 12G
 
     - name: Create meta data files
       ansible.builtin.template:
         src: "{{ template_dir }}/meta_data.j2"
-        dest: "/var/lib/libvirt/images/{{ vm_name }}/meta-data"
+        dest: "/var/lib/libvirt/images/{{ vm_id }}/meta-data"
       become: yes
 
     - name: Read file and add 4 indents
@@ -67,26 +63,26 @@
     - name: Create Jinja2 file
       template:
         src: "{{ template_dir }}/user_data.j2"
-        dest: "/var/lib/libvirt/images/{{ vm_name }}/user-data"
+        dest: "/var/lib/libvirt/images/{{ vm_id }}/user-data"
       vars:
         content: "{{ python_file_content.stdout }}"
 
 
     - name: Run genisoimage command
-      command: genisoimage -output "/var/lib/libvirt/images/{{ vm_name }}/{{ vm_name }}-cidata.iso" -volid cidata -joliet -rock meta-data user-data
+      command: genisoimage -output "/var/lib/libvirt/images/{{ vm_id }}/{{ vm_id }}-cidata.iso" -volid cidata -joliet -rock meta-data user-data
       args:
-        chdir: "/var/lib/libvirt/images/{{ vm_name }}"
+        chdir: "/var/lib/libvirt/images/{{ vm_id }}"
       become: yes
 
 
     - name: Generate XML files for VM definitions
       template:
         src: "{{ template_dir }}/vm_definition.j2"
-        dest: "{{ script_files_dir }}/{{ vm_name }}/{{ vm_name }}.xml"
+        dest: "{{ script_files_dir }}/{{ vm_id }}/{{ vm_id }}.xml"
 
 
     - name: create and start a VM
-      command: virsh create  "{{ script_files_dir }}/{{ vm_name }}/{{ vm_name }}.xml"
+      command: virsh create  "{{ script_files_dir }}/{{ vm_id }}/{{ vm_id }}.xml"
    
     - name: Add a DNAT rule for the created VM
       become: yes
