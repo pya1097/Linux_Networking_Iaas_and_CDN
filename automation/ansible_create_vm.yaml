@@ -3,9 +3,9 @@
   hosts: localhost
   gather_facts: no
   vars:
-    network_id: default
+    network_id: nc1v1s1
     
-    vm_id: vm_test
+    vm_id: vm1c1v1s1
     
     template_dir: "/home/vmadm/project/automation/jinja_templates"
     script_files_dir: "/home/vmadm/project/subnet_files"
@@ -15,10 +15,12 @@
 
     interface_name: enp1s0
     vpc_incoming_port: 1234
-    veth_vns_v_inf: 10.10.1.2
-    public_router_ip: 2.2.2.2
+    veth_vpns_v_inf: 10.10.10.2
+    subnet_ip: 20.1.1.1
+    public_router_ip: 1.1.1.2
     public_router_incoming_port: 1234
-    vm_ip: 10.10.10.2/30
+    vm_ip: 20.1.1.2/24
+    vm_ip_nmsk: 20.1.1.2
     vm_port: 8080
 
   tasks:   
@@ -84,10 +86,10 @@
     - name: create and start a VM
       command: virsh create  "{{ script_files_dir }}/{{ vm_id }}/{{ vm_id }}.xml"
    
-    - name: Add a DNAT rule for the created VM
+    - name: Add a DNAT rule for the created VMs
       become: yes
-      command: "iptables -t nat -A PREROUTING -p tcp -d {{ vpc_interface_ip }} --dport {{ vpc_incoming_port }} -j DNAT --to-destination {{ vm_ip }}:{{ vm_port }}"
+      command: "iptables -t nat -A PREROUTING -p tcp -d {{ veth_vpns_v_inf }} --dport {{ vpc_incoming_port }} -j DNAT --to-destination {{ vm_ip_nmsk }}:{{ vm_port }}"
 
     - name: Add a DNAT rule for public to private router 
       become: yes
-      command: "iptables -t nat -A PREROUTING -p tcp -d {{ public_router_ip }} --dport {{ public_router_port }} -j DNAT --to-destination {{ vpc_interface_ip }}:{{ vpc_incoming_port }}"
+      command: "iptables -t nat -A PREROUTING -p tcp -d {{ public_router_ip }} --dport {{ public_router_incoming_port }} -j DNAT --to-destination {{ veth_vpns_v_inf }}:{{ vpc_incoming_port }}"
