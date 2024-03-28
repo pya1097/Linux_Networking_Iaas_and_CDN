@@ -28,5 +28,5 @@ runcmd:
   - ['sh', '-c', 'sudo ip route add default via  {{ subnet_ip }} dev enp1s0 ']
   - ['sh', '-c', "sudo sed -i 's/^nameserver 127.0.0.53/nameserver 8.8.8.8/' /etc/resolv.conf"]
   - ['sh', '-c', 'apt update']
-  - ['sh', '-c', 'sudo apt install python3-flask --force-yes']
+  - ['sh', '-c', 'sudo apt install python3-flask --yes']
   - ['sh', '-c', 'python3 /root/main.py']

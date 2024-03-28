@@ -8,8 +8,8 @@
                 "subnet_details": 
                 {"subnet1" :  {
                         "subnet_name": "subnet1",
-                        "subnet_range_start": "192.168.151.2",
-                        "subnet_range_end": "192.168.151.254",
+                        "subnet_ip": "192.168.151.0",
+                        "subnet_mask": "24",
                         "subnet_id": 1
                     }
                 }
@@ -26,14 +26,14 @@
                     "subnet_details": 
                     {"subnet1" :  {
                             "subnet_name": "subnet1",
-                            "subnet_range_start": "192.168.151.2",
-                            "subnet_range_end": "192.168.151.254",
+                            "subnet_ip": "192.168.151.0",
+                            "subnet_mask": "24",
                             "subnet_id": 1
                         },
                     "subnet3"  :  {
                             "subnet_name": "subnet3",
-                            "subnet_range_start": "192.168.153.2",
-                            "subnet_range_end": "192.168.153.254",
+                            "subnet_ip": "192.168.153.0",
+                            "subnet_mask": "24",
                             "subnet_id": 2
                         }
                     }
@@ -44,8 +44,8 @@
                     "subnet_details": {
                     "subnet2"  :  {
                             "subnet_name": "subnet2",
-                            "subnet_range_start": "192.168.152.2",
-                            "subnet_range_end": "192.168.152.254",
+                            "subnet_ip": "192.168.152.0",
+                            "subnet_mask": "24",
                             "subnet_id": 1
                         }
                     }
