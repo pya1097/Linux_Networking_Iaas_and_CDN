@@ -23,6 +23,9 @@
     vm_ip_nmsk: 20.1.1.2
     vm_port: 8080
 
+    pub_namespace: public
+    vpc_id: c1v1
+
   tasks:   
     - name: Create the directory
       ansible.builtin.file:
@@ -50,10 +53,10 @@
         dest: "/var/lib/libvirt/images/{{ vm_id }}/meta-data"
       become: yes
 
-    - name: Read file and add 4 indents
+    - name: Read file and add 5 indents
       ansible.builtin.shell:
         cmd: |
-          sed -i 's/^/    /' source.py
+          sed -i 's/^/     /' source.py
       args:
         executable: /bin/bash
 
@@ -88,8 +91,8 @@
    
     - name: Add a DNAT rule for the created VMs
       become: yes
-      command: "iptables -t nat -A PREROUTING -p tcp -d {{ veth_vpns_v_inf }} --dport {{ vpc_incoming_port }} -j DNAT --to-destination {{ vm_ip_nmsk }}:{{ vm_port }}"
+      command: "sudo ip netns exec {{ vpc_id }} iptables -t nat -A PREROUTING -p tcp -d {{ veth_vpns_v_inf }} --dport {{ vpc_incoming_port }} -j DNAT --to-destination {{ vm_ip_nmsk }}:{{ vm_port }}"
 
     - name: Add a DNAT rule for public to private router 
       become: yes
-      command: "iptables -t nat -A PREROUTING -p tcp -d {{ public_router_ip }} --dport {{ public_router_incoming_port }} -j DNAT --to-destination {{ veth_vpns_v_inf }}:{{ vpc_incoming_port }}"
+      command: "sudo ip netns exec {{ pub_namespace }} iptables -t nat -A PREROUTING -p tcp -d {{ public_router_ip }} --dport {{ public_router_incoming_port }} -j DNAT --to-destination {{ veth_vpns_v_inf }}:{{ vpc_incoming_port }}"
