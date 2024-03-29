@@ -17,37 +17,31 @@
     veth_brv_br_inf: ve_c2v2s1_b # veth pair of bridgeid (birdge and vpc), bridge end
     veth_brv_v_inf: ve_c2v2s1_v # veth pair of bridgeid (birdge and vpc), vpc end
     veth_vpns_v_inf: ve_c2v2_v # veth pair of vpcid (vpc and namespace), vpc end
-    network_id: nc2v2s1 # network of customeridvpcid's subnetid
+    d: nc2v2s1 # network of customeridvpcid's subnetid
     veth_brv_v_inf_ip: 20.1.1.1/24 # veth pair of bridgeid (birdge and vpc), vpc end's ip         # {{ subnet_prefix }}.1/30
     subnet_ip: 20.1.1.0/24 # subnet ip
-    vm_id: vm1c2v2s1 # networkid of customeridvpcid's subnetid
     template_dir: "/home/vmadm/project/automation/jinja_templates"
     script_files_dir: "/home/vmadm/project/subnet_files"
 
   tasks:   
   
-  # #-----------------------------------BRIDGE CREATION----------------------------------------------
-  #   - name: Create the directory
-  #     ansible.builtin.file:
-  #       path: "{{ script_files_dir }}/{{ vm_id }}"
-  #       state: directory
+  #-----------------------------------BRIDGE CREATION----------------------------------------------
+    - name: Create a Linux Bride
+      become: yes
+      ansible.builtin.command: "sudo brctl addbr {{ br_id }}"
 
-  #   - name: Create a Linux Bride
-  #     become: yes
-  #     ansible.builtin.command: "sudo brctl addbr {{ br_id }}"
-
-  #   - name: Ensure Bridge is up
-  #     become: yes
-  #     ansible.builtin.command: "sudo ip link set dev {{ br_id }} up"
+    - name: Ensure Bridge is up
+      become: yes
+      ansible.builtin.command: "sudo ip link set dev {{ br_id }} up"
     
-  # #-----------------------------------NETWORK CREATION----------------------------------------------
-  #   - name: Copy network XML files to libvirt directory
-  #     template:
-  #       src: "{{ template_dir }}/network_definition.j2"
-  #       dest: "{{ script_files_dir }}/{{ vm_id }}/{{ network_id }}.xml"
+  #-----------------------------------NETWORK CREATION----------------------------------------------
+    - name: Copy network XML files to libvirt directory
+      template:
+        src: "{{ template_dir }}/network_definition.j2"
+        dest: "{{ script_files_dir }}/{{ network_id }}/{{ network_id }}.xml"
 
     - name: Define network using virsh
-      command: virsh net-define "{{ script_files_dir }}/{{ vm_id }}/{{ network_id }}.xml"
+      command: virsh net-define "{{ script_files_dir }}/{{ network_id }}/{{ network_id }}.xml"
       become: yes
 
     - name: Start the defined network

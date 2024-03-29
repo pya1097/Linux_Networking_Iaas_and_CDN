@@ -53,7 +53,6 @@ for client, client_data in data.items():
                             "network_id": network_id,
                             "veth_brv_v_inf_ip": veth_brv_v_inf_ip,
                             "subnet_ip": subnet_ip,
-                            "vm_id": vm_id,
                             "template_dir": "/home/vmadm/project/automation/jinja_templates",
                             "script_files_dir": "/home/vmadm/project/subnet_files"
                         }
