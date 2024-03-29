@@ -4,6 +4,7 @@ import yaml
 import json
 import os
 import random
+import subprocess
 
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import FileResponse
@@ -145,14 +146,24 @@ async def create_upload_vpc_file(file: UploadFile):
 
     if file.filename.endswith(".yaml"):
         contents = await file.read()
+        # Updating database
         try:
             yaml_data = yaml.safe_load(contents)
             yaml_data = transform_vpc_input(yaml_data)
 
             id = create_or_update_vpc(yaml_data, "../database/database.json")
-            return {"message": "Your VPC ID is: "+str(id)}
         except yaml.YAMLError as e:
             raise HTTPException(status_code=400, detail=f"Invalid YAML format: {e}")
+        
+        # Executing vpc southbound
+        try:
+            subprocess.run(['python', '../southbound/vpc.py','',''])
+            print("Script executed successfully.")
+            return {"message": "Your VPC ID is: "+str(id)}
+        except subprocess.CalledProcessError as e:
+            print("Error occurred while executing the script:", e)
+
+
     else:
         raise HTTPException(status_code=400, detail="Uploaded file must be in YAML format.")
 

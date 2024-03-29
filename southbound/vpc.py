@@ -1,9 +1,9 @@
 import json
 from ruamel.yaml import YAML
-import random
 import os
 import yaml
 import sys
+import subprocess
 
 input_client_id = sys.argv[1]
 input_vpc_id = sys.argv[2]
@@ -39,4 +39,20 @@ for client, client_data in data.items():
 os.makedirs(os.path.dirname(yaml_file_path), exist_ok=True)
 with open(yaml_file_path, 'w') as yaml_file:
     yaml.dump(subnet_yaml_data, yaml_file)
+
+def run_ansible_playbook(playbook_path):
+    # Construct the command to run
+    command = ["sudo", "ansible-playbook", playbook_path]
+
+    # Execute the command
+    try:
+        subprocess.run(command, check=True)
+        print("Ansible playbook executed successfully.")
+    except subprocess.CalledProcessError as e:
+        print(f"Error executing Ansible playbook: {e}")
+        return False
+
+playbook_path = '../automation/ansible_create_vpc.yaml'
+run_ansible_playbook(playbook_path)
+
 
