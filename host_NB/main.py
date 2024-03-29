@@ -147,6 +147,14 @@ def transform_vpc_input(yaml_data):
 
     return yaml_data
 
+def update_status(data,):
+    for customer in data.values():
+        if customer_id == 
+        if "vpcs" in customer:
+            for vpc in customer["vpcs"].values():
+                vpc["_Status_"] = "CREATED"
+    return data
+
 
 @app.post("/uploadVPCDetails/")
 async def create_upload_vpc_file(file: UploadFile):
@@ -162,6 +170,16 @@ async def create_upload_vpc_file(file: UploadFile):
         except yaml.YAMLError as e:
             raise HTTPException(status_code=400, detail=f"Invalid YAML format: {e}")
         
+        
+        
+
+        with open("../database/database.json", "r") as file:
+            orignal_data = json.load(file) 
+        
+        data = orignal_data[yaml_data["customer_name"]]
+
+        for key, val in data["vpcs"].items():
+
         # # Executing vpc southbound
         # try:
         #     subprocess.run(['python', '../southbound/vpc.py','',''])
@@ -169,6 +187,12 @@ async def create_upload_vpc_file(file: UploadFile):
         #     return {"message": "Your VPC ID is: "+str(id)}
         # except subprocess.CalledProcessError as e:
         #     print("Error occurred while executing the script:", e)
+  
+            data = update_status(data)
+        
+        orignal_data[yaml_data['customer_name']] = data
+        with open(json_file, "w") as file:
+            json.dump(existing_data, file, indent=4)
 
 
     else:

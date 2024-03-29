@@ -7,6 +7,8 @@
                 "vpc_name": "VPC1",
                 "vpc_id": 1,
                 "vpc_ip": "72.187.127",
+                "_Timestamp_": "2024-03-29 16:32:14.000733",
+                "_Status_": "IN_PROGRESS",
                 "subnet_details": {
                     "subnet1": {
                         "subnet_name": "subnet1",
