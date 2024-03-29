@@ -11,7 +11,7 @@
                     "subnet1": {
                         "subnet_name": "subnet1",
                         "subnet_ip": "10.10.10.0",
-                        "subent_mask": 24,
+                        "subnet_mask": 24,
                         "subnet_id": 1,
                         "incoming_dnat_routing_port": "9719",
                         "vm_details": {
@@ -35,7 +35,7 @@
                     "subnet2": {
                         "subnet_name": "subnet2",
                         "subnet_ip": "11.11.11.0",
-                        "subent_mask": 24,
+                        "subnet_mask": 24,
                         "subnet_id": 1,
                         "incoming_dnat_routing_port": "6439",
                         "vm_details": {

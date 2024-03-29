@@ -36,13 +36,13 @@ for client, client_data in data.items():
                         for vm_id, vm_details in vm_details.items():
                             if vm_id == input_vm_id:
                                 subnet_ip = subnet_info["subnet_ip"]
-                                subnet_mask = subnet_info["subnet_mask"]
+                                subnet_mask = str(subnet_info["subnet_mask"])
                                 port = subnet_info["incoming_dnat_routing_port"]
                                 v_id = f'c{customer_id}v{vpc_id}'
                                 sn_id = f'{v_id}s{subnet_id}'
                                 network_id = f'n{sn_id}'
-                                vm_ip = '.'.join(subnet_ip.split('.')[:-1]) + '.2/' + subnet_mask
-                                vm_ip_nmsk = '.'.join(subnet_ip.split('.')[:-1]) + '.2'
+                                vm_ip = '.'.join(subnet_ip.split('.')[:-1]) + '.'+str(vm_id)+'/' + subnet_mask
+                                vm_ip_nmsk = '.'.join(subnet_ip.split('.')[:-1]) + '.'+str(vm_id)
                                 subnet_ip = '.'.join(subnet_ip.split('.')[:-1]) + '.1'
                                 vm_id = f'vm{vm_id}{sn_id}'
                                 vpc_ip = vpc_details["vpc_ip"]

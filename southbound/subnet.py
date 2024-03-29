@@ -32,7 +32,7 @@ for client, client_data in data.items():
                     subnet_id = subnet_info["subnet_id"]
                     if str(subnet_id) == str(input_subnet_id):
                         subnet_ip = subnet_info["subnet_ip"]
-                        subnet_mask = subnet_info["subnet_mask"]
+                        subnet_mask = str(subnet_info["subnet_mask"])
                         v_id = f'c{customer_id}v{vpc_id}'
                         sn_id = f'{v_id}s{subnet_id}'
                         br_id = f'b{sn_id}'
