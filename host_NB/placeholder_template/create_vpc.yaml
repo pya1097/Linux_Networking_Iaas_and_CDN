@@ -1,7 +1,6 @@
-name: Enter your name
+customer_name: Enter your name
 customer_id: Enter your ID
-details:
-  - vpc_name:  Enter VPC name
-    dns: False
+vpcs:
+  - vpc_name:  Enter VPC name  
   - vpc_name: Enter VPC name
-    dns: False
+

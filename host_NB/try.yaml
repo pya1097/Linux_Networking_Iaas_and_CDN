@@ -1,4 +1,26 @@
-name: priya
-details:
-  - customer_pwd: p
-    customer_addr: priya
+customer_name: john
+customer_id: 1
+vpcs:
+  - vpc_name:  VPC1
+    subnet_details:
+      - subnet_name:  subnet1
+        subnet_ip: 10.10.10.0  
+        subent_mask: 24
+        vm_details:
+          - memory: 1024
+            vcpu: 1
+          - memory: 1024
+            vcpu: 1
+  - vpc_name: VPC2
+    subnet_details:
+      - subnet_name:  subnet2
+        subnet_ip: 11.11.11.0
+        subent_mask: 24
+        vm_details:
+          - memory: 2048
+            vcpu: 2
+
+
+
+
+  

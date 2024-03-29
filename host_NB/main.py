@@ -3,7 +3,7 @@ from pydantic import BaseModel
 import yaml
 import json
 import os
-
+import random
 
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import FileResponse
@@ -21,24 +21,36 @@ async def download_file(template_name: str):
     return FileResponse(file_path, filename=file_name)
 
 #------------------------------User Details-----------------------------------------------------------
-
 def create_or_update_user_data(yaml_data, json_file):
-    print(yaml_data)
-    if os.path.exists(json_file):
-        with open(json_file, "r") as file:
+    resp = {}
+    try:
+        with open(json_file, 'r') as file:
             existing_data = json.load(file)
-        n = len(existing_data)
-        yaml_data['customer_id'] = n+1
-        existing_data[yaml_data['name']] = yaml_data
-        with open(json_file, "w") as file:
-            json.dump(existing_data, file, indent=4)
-    else:
-        with open(json_file, "w") as file:
-            data = {}
-            yaml_data['customer_id'] = 1
-            data[yaml_data['name']] = yaml_data
-            json.dump(data, file, indent=4)
-    return yaml_data['customer_id']
+    except FileNotFoundError:
+        existing_data = {}
+
+    n = len(existing_data)
+    
+    for key,val in yaml_data.items():
+        val['customer_id'] = n+1
+        n+=1
+        resp[key] = val['customer_id']
+
+    existing_data.update(yaml_data)
+
+    with open(json_file, 'w') as file:
+        json.dump(existing_data, file, indent=4)
+
+    return resp
+
+def transform_user_input(yaml_data):
+    name = yaml_data['customer_name']
+
+    new_dict = {
+        name: yaml_data
+    }
+
+    return new_dict
 
 @app.post("/uploadUserDetails/")
 async def create_upload_file(file: UploadFile):
@@ -47,56 +59,86 @@ async def create_upload_file(file: UploadFile):
         contents = await file.read()
         try:
             yaml_data = yaml.safe_load(contents)
-            id = create_or_update_user_data(yaml_data, "../database/user_data.json")
+            yaml_data = transform_user_input(yaml_data)
+
+            id = create_or_update_user_data(yaml_data, "../database/database.json")
             return {"message": "Your customer ID is: "+str(id)}
         except yaml.YAMLError as e:
             raise HTTPException(status_code=400, detail=f"Invalid YAML format: {e}")
     else:
         raise HTTPException(status_code=400, detail="U  ploaded file must be in YAML format.")
 
-@app.get("/getUserDetails/{customer_name}")
-async def get_customer(customer_name: str):
-    with open("../database/user_data.json", "r") as file:
-        data = json.load(file)
-        return data[customer_name]
 
 #------------------------------VPC Details-----------------------------------------------------------
-def create_or_update_vpc(yaml_data, json_file):
-    
-    if os.path.exists(json_file):
-        with open(json_file, "r") as file:
-            existing_data = json.load(file)
-        if yaml_data['name'] in existing_data:
-            yaml_data, vpc_ids = add_vpc_ids(yaml_data, existing_data[yaml_data['name']])
-        else:
-            yaml_data, vpc_ids = add_vpc_ids(yaml_data)
 
-        existing_data[yaml_data['name']] = yaml_data
-        with open(json_file, "w") as file:
-            json.dump(existing_data, file, indent=4)
+def generate_random_prefix():
+
+    try:
+        with open('../database/used_prefixes.txt', 'r') as prefix_file:
+            used_prefixes = prefix_file.read().splitlines()
+    except FileNotFoundError:
+        used_prefixes = []
+
+    prefix = ".".join([str(random.randint(0, 255)) for _ in range(3)])
+    while prefix in used_prefixes:
+        prefix = ".".join([str(random.randint(0, 255)) for _ in range(3)])
+
+    used_prefixes.append(prefix)
+    
+    with open('../database/used_prefixes.txt', 'w') as prefix_file:
+        prefix_file.write('\n'.join(used_prefixes))
+    
+    return prefix
+
+
+
+def create_or_update_vpc(yaml_data, json_file):  
+
+    with open(json_file, "r") as file:
+        existing_data = json.load(file)
+
+    if 'vpcs' in existing_data[yaml_data['customer_name']]:
+        yaml_data, vpc_ids = add_vpc_ids(yaml_data, existing_data[yaml_data['customer_name']])
     else:
-        with open(json_file, "w") as file:
-            data = {}
-            yaml_data, vpc_ids = add_vpc_ids(yaml_data)
-            data[yaml_data['name']] = yaml_data
-            json.dump(data, file, indent=4)
+        yaml_data, vpc_ids = add_vpc_ids(yaml_data)
+       
+
+    existing_data[yaml_data['customer_name']] = yaml_data
+    with open(json_file, "w") as file:
+        json.dump(existing_data, file, indent=4)
+
     return vpc_ids
 
 
 def add_vpc_ids(yaml_data,existing_data=None):
     vpc_ids = {}
     if not existing_data:
-        for i, val in enumerate(yaml_data['details']):
-            val['vpc_id'] = i+1
-            vpc_ids[val['vpc_name']] = i+1
+        i=1
+        for key, val in yaml_data['vpcs'].items():
+            vpc_ids[key] = i
+            val['vpc_id'] = i
+            val['vpc_ip'] = generate_random_prefix()
+            i+=1
     else:
-        n = len(existing_data['details'])
-        for i, val in enumerate(yaml_data['details']):
-            val['vpc_id'] = n+i+1
-            vpc_ids[val['vpc_name']] = n+i+1
-            existing_data['details'].append(val)
-            yaml_data = existing_data
+        n = len(existing_data['vpcs'])
+        i =1
+        for key, val in yaml_data['vpcs'].items():
+            val['vpc_id'] = n+i
+            vpc_ids[val['vpc_name']] = n+i
+            existing_data['vpcs'][key] = val
+            val['vpc_ip'] = generate_random_prefix()
+            i+=1
+        yaml_data = existing_data
+            
     return yaml_data, vpc_ids
+
+def transform_vpc_input(yaml_data):
+    vpcs_dict = {vpc['vpc_name']: vpc for vpc in yaml_data['vpcs']}
+
+    yaml_data['vpcs'] = vpcs_dict
+
+    return yaml_data
+
 
 @app.post("/uploadVPCDetails/")
 async def create_upload_vpc_file(file: UploadFile):
@@ -105,76 +147,96 @@ async def create_upload_vpc_file(file: UploadFile):
         contents = await file.read()
         try:
             yaml_data = yaml.safe_load(contents)
-            id = create_or_update_vpc(yaml_data, "../database/vpc_data.json")
+            yaml_data = transform_vpc_input(yaml_data)
+
+            id = create_or_update_vpc(yaml_data, "../database/database.json")
             return {"message": "Your VPC ID is: "+str(id)}
         except yaml.YAMLError as e:
             raise HTTPException(status_code=400, detail=f"Invalid YAML format: {e}")
     else:
         raise HTTPException(status_code=400, detail="Uploaded file must be in YAML format.")
-    
-@app.get("/getVPCDetails/{customer_name}")
-async def get_vpc(customer_name: str):
-    with open("../database/vpc_data.json", "r") as file:
-        data = json.load(file)
-        return data[customer_name]
+
 
 #------------------------------Subnet Details-----------------------------------------------------------
 
+def generate_random_port():
+
+    try:
+        with open('../database/used_ports.txt', 'r') as port_file:
+            used_ports = port_file.read().splitlines()
+    except FileNotFoundError:
+        used_ports = []
+
+    port = str(random.randint(1000, 9999))
+    while port in used_ports:
+        port = str(random.randint(1000, 9999))
+
+    used_ports.append(port)
+    
+    with open('../database/used_ports.txt', 'w') as port_file:
+        port_file.write('\n'.join(used_ports))
+    
+    return port
+
+def transform_subnet_input(yaml_data):
+    vpcs_dict = {}
+    for vpc in yaml_data['vpcs']:
+        vpc_name = vpc['vpc_name']
+        vpcs_dict[vpc_name] = vpc
+
+        subnets_dict = {}
+        for subnet in vpc['subnet_details']:
+            subnet_name = subnet['subnet_name']
+            subnets_dict[subnet_name] = subnet
+        
+        vpcs_dict[vpc_name]['subnet_details'] = subnets_dict
+
+    yaml_data['vpcs'] = vpcs_dict
+    return yaml_data
+
+
 def create_or_update_subnet(yaml_data, json_file):
-    
-    if os.path.exists(json_file):
-        with open(json_file, "r") as file:
-            existing_data = json.load(file)
-        if yaml_data['name'] in existing_data:
-            yaml_data, subnet_ids = add_subnet_ids(yaml_data, existing_data[yaml_data['name']])
+    resp = {}
+    with open(json_file, "r") as file:
+        existing_data = json.load(file)
+
+    for key, val in yaml_data['vpcs'].items():
+        if 'subnet_details' in existing_data[yaml_data['customer_name']]['vpcs'][key]:
+            yaml_data['vpcs'][key]['subnet_details'], subnet_ids = add_subnet_ids(yaml_data['vpcs'][key]['subnet_details'],key,existing_data[yaml_data['customer_name']]['vpcs'][key]['subnet_details'])
         else:
-            yaml_data, subnet_ids = add_subnet_ids(yaml_data)
+            yaml_data['vpcs'][key]['subnet_details'], subnet_ids = add_subnet_ids(yaml_data['vpcs'][key]['subnet_details'],key)
+        resp.update(subnet_ids)
 
-        existing_data[yaml_data['name']] = yaml_data
-        with open(json_file, "w") as file:
-            json.dump(existing_data, file, indent=4)
-    else:
-        with open(json_file, "w") as file:
-            data = {}
-            yaml_data, subnet_ids = add_subnet_ids(yaml_data)
-            data[yaml_data['name']] = yaml_data
-            json.dump(data, file, indent=4)
+        existing_data[yaml_data['customer_name']]['vpcs'][key]['subnet_details'] = yaml_data['vpcs'][key]['subnet_details']
     
-    return subnet_ids
+    with open(json_file, "w") as file:
+        json.dump(existing_data, file, indent=4)
+
+    
+    return resp
 
 
-def add_subnet_ids(yaml_data,existing_data=None):
+def add_subnet_ids(yaml_data_vpc_data,vpc,existing_data=None):
     subnet_ids = {}
     
     if not existing_data:
-        for i, vpc in enumerate(yaml_data['details']):
-            for j, sub in enumerate(vpc['subnet_details']):
-                sub['subnet_id'] = j+1
-                subnet_ids[vpc['vpc_name']+" : "+sub['subnet_name']] = i+1
+        i=1
+        for key, val in yaml_data_vpc_data.items():
+            val['subnet_id'] = i
+            val['incoming_dnat_routing_port'] = generate_random_port()
+            subnet_ids[vpc+"_"+key] = i
+            i+=1
     else:
-        for i, vpc1 in enumerate(yaml_data['details']):
-            exists_vpc = {}
-            index = 0
-            for j, vpc2 in enumerate(existing_data['details']):
-                if(vpc1['vpc_name']==vpc2['vpc_name']):
-                    exists_vpc = vpc2
-                    index = j
-            
-            if len(exists_vpc)==0:
-                for j, sub in enumerate(vpc1['subnet_details']):
-                    sub['subnet_id'] = j+1
-                    subnet_ids[vpc1['vpc_name']+" : "+sub['subnet_name']] = j+1
-                existing_data['details'].append(vpc1)
-            else: 
-                n = len(exists_vpc['subnet_details'])
-                for j, sub in enumerate(vpc1['subnet_details']):
-                    sub['subnet_id'] = n+j+1
-                    subnet_ids[vpc1['vpc_name']+" : "+sub['subnet_name']] = n+j+1
-                    exists_vpc['subnet_details'].append(sub)
-                
-                existing_data['details'][index] = exists_vpc
-            yaml_data = existing_data
-    return yaml_data, subnet_ids
+        n = len(existing_data)
+        i=1
+        for key, val in yaml_data_vpc_data.items():
+            val['subnet_id'] = n+i
+            val['incoming_dnat_routing_port'] = generate_random_port()
+            subnet_ids[vpc+"_"+key] = n+i
+            existing_data[key] = val
+            i+=1
+        yaml_data_vpc_data = existing_data
+    return yaml_data_vpc_data, subnet_ids
 
 @app.post("/uploadSubnetDetails/")
 async def create_upload_subnet_file(file: UploadFile):
@@ -183,20 +245,78 @@ async def create_upload_subnet_file(file: UploadFile):
         contents = await file.read()
         try:
             yaml_data = yaml.safe_load(contents)
-            id = create_or_update_subnet(yaml_data, "../database/subnet_data.json")
+            yaml_data = transform_subnet_input(yaml_data)
+
+            id = create_or_update_subnet(yaml_data, "../database/database.json")
             return {"message": "Your Subnet ID is: "+str(id)}
         except yaml.YAMLError as e:
             raise HTTPException(status_code=400, detail=f"Invalid YAML format: {e}")
     else:
         raise HTTPException(status_code=400, detail="Uploaded file must be in YAML format.")
     
-@app.get("/getSubnetDetails/{customer_name}")
-async def get_subnet(customer_name: str):
-    with open("../database/subnet_data.json", "r") as file:
-        data = json.load(file)
-        return data[customer_name]
+
+#-----------------------------------------VM Addition details------------------------------------------------
+
+def create_or_update_vm(yaml_data, json_file):
+    resp = {}
+    with open(json_file, "r") as file:
+        existing_data = json.load(file)
+
+    for vpc, vpc_val in yaml_data['vpcs'].items():
+        for key, val in vpc_val['subnet_details'].items():
+            
+            if 'vm_details' in existing_data[yaml_data['customer_name']]['vpcs'][vpc]['subnet_details'][key]:
+                yaml_data['vpcs'][vpc]['subnet_details'][key]['vm_details'], vm_ids = add_vm_ids(yaml_data['vpcs'][vpc]['subnet_details'][key]['vm_details'],vpc,key,existing_data[yaml_data['customer_name']]['vpcs'][vpc]['subnet_details'][key]['vm_details'])
+            else:
+                yaml_data['vpcs'][vpc]['subnet_details'][key]['vm_details'], vm_ids = add_vm_ids(yaml_data['vpcs'][vpc]['subnet_details'][key]['vm_details'],vpc,key)
+            resp.update(vm_ids)
+
+            existing_data[yaml_data['customer_name']]['vpcs'][vpc]['subnet_details'][key]['vm_details'] = yaml_data['vpcs'][vpc]['subnet_details'][key]['vm_details']
+    
+    with open(json_file, "w") as file:
+        json.dump(existing_data, file, indent=4)
+
+    
+    return resp
 
 
+def add_vm_ids(yaml_data_vpc_data,vpc,subnet,existing_data=None):
+    vm_ids = {}
+    vm_details = {}
+
+    if not existing_data:
+        for i, val in enumerate(yaml_data_vpc_data):
+            vm_details[i+2] = val
+            vm_ids[vpc+"_"+subnet+"_VM"+str(i+2)] = i+2
+        yaml_data_vpc_data = vm_details
+    else:
+        n = len(existing_data)
+        print('fine')
+        for i, val in enumerate(yaml_data_vpc_data):
+            vm_ids[vpc+"_"+subnet+"_VM"+str(i+2)] = n+i+2
+            existing_data[n+i+2] = val
+
+        yaml_data_vpc_data = existing_data
+
+    return yaml_data_vpc_data, vm_ids
+
+
+@app.post("/uploadVMDetails/")
+async def create_upload_VMfile(file: UploadFile):
+
+    if file.filename.endswith(".yaml"):
+        contents = await file.read()
+        try:
+            yaml_data = yaml.safe_load(contents)
+            yaml_data = transform_subnet_input(yaml_data)
+            print(yaml_data)
+
+            id = create_or_update_vm(yaml_data, "../database/database.json")
+            return {"message": "Your Subnet ID is: "+str(id)}
+        except yaml.YAMLError as e:
+            raise HTTPException(status_code=400, detail=f"Invalid YAML format: {e}")
+    else:
+        raise HTTPException(status_code=400, detail="Uploaded file must be in YAML format.")
 
 if __name__ == "__main__":
     import uvicorn
