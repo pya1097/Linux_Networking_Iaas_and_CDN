@@ -182,8 +182,8 @@ async def create_upload_vpc_file(file: UploadFile):
         #     return {"message": "Your VPC ID is: "+str(id)}
         # except subprocess.CalledProcessError as e:
         #     print("Error occurred while executing the script:", e)
-  
-            val = update_vpc_status(val)
+            if key in yaml_data['vpcs']:
+                val = update_vpc_status(val)
         
         orignal_data[yaml_data['customer_name']] = data
         with open("../database/database.json", "w") as file:
@@ -298,8 +298,9 @@ async def create_upload_subnet_file(file: UploadFile):
 
             for vpc, vpc_data in data['vpcs'].items():
                 for subnet, subnet_data in vpc_data['subnet_details'].items():
-                    subnet_data = update_vpc_status(subnet_data)
-                    orignal_data[yaml_data["customer_name"]]['vpcs'][vpc]['subnet_details'][subnet] = subnet_data
+                    if subnet in yaml_data['vpcs'][vpc]['subnet_details']:
+                        subnet_data = update_vpc_status(subnet_data)
+                        orignal_data[yaml_data["customer_name"]]['vpcs'][vpc]['subnet_details'][subnet] = subnet_data
 
                     ##Call SB Script for creating Subnet
 
@@ -385,8 +386,9 @@ async def create_upload_VMfile(file: UploadFile):
             for vpc, vpc_data in data['vpcs'].items():
                 for subnet, subnet_data in vpc_data['subnet_details'].items():
                     for vm, vm_data in subnet_data['vm_details'].items():
-                        vm_data = update_vpc_status(vm_data)
-                        orignal_data[yaml_data["customer_name"]]['vpcs'][vpc]['subnet_details'][subnet]['vm_details'][vm] = vm_data
+                        if vm in yaml_data['vpcs'][vpc]['subent_details'][subnet]['vm_details']:
+                            vm_data = update_vpc_status(vm_data)
+                            orignal_data[yaml_data["customer_name"]]['vpcs'][vpc]['subnet_details'][subnet]['vm_details'][vm] = vm_data
 
                             ##Call SB Script for creating VM 
 
