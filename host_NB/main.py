@@ -5,6 +5,7 @@ import json
 import os
 import random
 import subprocess
+from datetime import datetime
 
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import FileResponse
@@ -34,6 +35,8 @@ def create_or_update_user_data(yaml_data, json_file):
     
     for key,val in yaml_data.items():
         val['customer_id'] = n+1
+        val['_Timestamp_'] = str(datetime.now())
+        val['_Status_'] = "CREATED"
         n+=1
         resp[key] = val['customer_id']
 
@@ -119,6 +122,8 @@ def add_vpc_ids(yaml_data,existing_data=None):
             vpc_ids[key] = i
             val['vpc_id'] = i
             val['vpc_ip'] = generate_random_prefix()
+            val['_Timestamp_'] = str(datetime.now())
+            val['_Status_'] = "IN_PROGRESS"
             i+=1
     else:
         n = len(existing_data['vpcs'])
@@ -128,6 +133,8 @@ def add_vpc_ids(yaml_data,existing_data=None):
             vpc_ids[val['vpc_name']] = n+i
             existing_data['vpcs'][key] = val
             val['vpc_ip'] = generate_random_prefix()
+            val['_Timestamp_'] = str(datetime.now())
+            val['_Status_'] = "IN_PROGRESS"
             i+=1
         yaml_data = existing_data
             
@@ -155,13 +162,13 @@ async def create_upload_vpc_file(file: UploadFile):
         except yaml.YAMLError as e:
             raise HTTPException(status_code=400, detail=f"Invalid YAML format: {e}")
         
-        # Executing vpc southbound
-        try:
-            subprocess.run(['python', '../southbound/vpc.py','',''])
-            print("Script executed successfully.")
-            return {"message": "Your VPC ID is: "+str(id)}
-        except subprocess.CalledProcessError as e:
-            print("Error occurred while executing the script:", e)
+        # # Executing vpc southbound
+        # try:
+        #     subprocess.run(['python', '../southbound/vpc.py','',''])
+        #     print("Script executed successfully.")
+        #     return {"message": "Your VPC ID is: "+str(id)}
+        # except subprocess.CalledProcessError as e:
+        #     print("Error occurred while executing the script:", e)
 
 
     else:
