@@ -1,5 +1,5 @@
 {"john": {
-    "name": "john",
+    "customer_name": "john",
     "customer_id": 1,
     "vpcs": {
        "VPC1" : {
@@ -31,7 +31,7 @@
     }
 },
     "mary": {
-        "name": "mary",
+        "customer_name": "mary",
         "customer_id": 2,
         "vpcs": {
            "VPC1" : {
