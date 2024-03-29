@@ -147,11 +147,11 @@ def transform_vpc_input(yaml_data):
 
     return yaml_data
 
-def update_status(data):
-    for vpc, vpc_data in data['vpcs'].values():
-        vpc_data['_Status_'] = 'CREATED'
-        vpc_data["_Timestamp_"] = str(datetime.now())
-    return data
+def update_vpc_status(val):
+    # for vpc, vpc_data in data['vpcs'].items():
+    val['_Status_'] = 'CREATED'
+    val["_Timestamp_"] = str(datetime.now())
+    return val
 
 
 @app.post("/uploadVPCDetails/")
@@ -186,7 +186,7 @@ async def create_upload_vpc_file(file: UploadFile):
         # except subprocess.CalledProcessError as e:
         #     print("Error occurred while executing the script:", e)
   
-            data = update_status(data)
+            val = update_vpc_status(val)
         
         orignal_data[yaml_data['customer_name']] = data
         with open("../database/database.json", "w") as file:
