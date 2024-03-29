@@ -147,12 +147,10 @@ def transform_vpc_input(yaml_data):
 
     return yaml_data
 
-def update_status(data,):
-    for customer in data.values():
-        if customer_id == 
-        if "vpcs" in customer:
-            for vpc in customer["vpcs"].values():
-                vpc["_Status_"] = "CREATED"
+def update_status(data):
+    for vpc, vpc_data in data['vpcs'].values():
+        vpc_data['_Status_'] = 'CREATED'
+        vpc_data["_Timestamp_"] = str(datetime.now())
     return data
 
 
@@ -191,8 +189,8 @@ async def create_upload_vpc_file(file: UploadFile):
             data = update_status(data)
         
         orignal_data[yaml_data['customer_name']] = data
-        with open(json_file, "w") as file:
-            json.dump(existing_data, file, indent=4)
+        with open("../database/database.json", "w") as file:
+            json.dump(orignal_data, file, indent=4)
 
 
     else:
