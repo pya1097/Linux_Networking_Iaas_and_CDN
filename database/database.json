@@ -15,10 +15,12 @@
                         "subnet_id": 1,
                         "vm_details":{
                             "2":{
+                                "vm_id": 2,
                                 "memory": 1024,
                                 "vcpu": 1
                             },
                             "3":{
+                                "vm_id": 3,
                                 "memory": 1024,
                                 "vcpu": 1
                             }
