@@ -32,32 +32,43 @@ for client, client_data in data.items():
                 for subnet_name, subnet_info in subnet_details.items():
                     subnet_id = subnet_info["subnet_id"]
                     if str(subnet_id) == str(input_subnet_id):
-                        subnet_ip = subnet_info["subnet_ip"]
-                        subnet_mask = subnet_info["subnet_mask"]
-                        v_id = f'c{customer_id}v{vpc_id}'
-                        sn_id = f'{v_id}s{subnet_id}'
-                        br_id = f'b{sn_id}'
-                        veth_brv_br_inf = f've_{sn_id}_b'
-                        veth_brv_v_inf = f've_{sn_id}_v'
-                        veth_vpns_v_inf = f've_{v_id}_v'
-                        network_id = f'n{sn_id}'
-                        veth_brv_v_inf_ip = '.'.join(subnet_ip.split('.')[:-1]) + '.1/' + subnet_mask
-                        subnet_ip = subnet_ip + '/' + subnet_mask
-                        vm_id = f'vm1{sn_id}'
-                        subnet_yaml_data = {
-                            "pub_namespace": 'public',
-                            "vpc_id": v_id,
-                            "br_id": br_id,
-                            "veth_brv_br_inf": veth_brv_br_inf,
-                            "veth_brv_v_inf": veth_brv_v_inf,
-                            "veth_vpns_v_inf": veth_vpns_v_inf,
-                            "network_id": network_id,
-                            "veth_brv_v_inf_ip": veth_brv_v_inf_ip,
-                            "subnet_ip": subnet_ip,
-                            "vm_id": vm_id,
-                            "template_dir": "/home/vmadm/project/automation/jinja_templates",
-                            "script_files_dir": "/home/vmadm/project/subnet_files"
-                        }
+                        vm_details = subnet_info["vm_details"]
+                        for vm_id, vm_details in vm_details.items():
+                            if vm_id == input_vm_id:
+                                subnet_ip = subnet_info["subnet_ip"]
+                                subnet_mask = subnet_info["subnet_mask"]
+                                port = subnet_info["incoming_dnat_routing_port"]
+                                v_id = f'c{customer_id}v{vpc_id}'
+                                sn_id = f'{v_id}s{subnet_id}'
+                                network_id = f'n{sn_id}'
+                                vm_ip = '.'.join(subnet_ip.split('.')[:-1]) + '.2/' + subnet_mask
+                                vm_ip_nmsk = '.'.join(subnet_ip.split('.')[:-1]) + '.2'
+                                subnet_ip = '.'.join(subnet_ip.split('.')[:-1]) + '.1'
+                                vm_id = f'vm{vm_id}{sn_id}'
+                                vpc_ip = vpc_details["vpc_ip"]
+                                memory = vm_details["memory"]
+                                vcpu = vm_details["vcpu"]
+                                subnet_yaml_data = {
+                                    "vm_port": 8080,
+                                    "pub_namespace": "public",
+                                    "template_dir": "/home/vmadm/project/automation/jinja_templates",
+                                    "script_files_dir": "/home/vmadm/project/subnet_files",
+                                    "public_router_ip": "1.1.1.2",
+                                    "interface_name": "enp1s0",
+                                    "vpc_id": v_id,
+                                    "network_id": network_id,
+                                    "vpc_incoming_port": port,
+                                    "public_router_incoming_port": port,
+                                    "veth_vpns_v_inf": f'{vpc_ip}.2',
+                                    "subnet_ip": subnet_ip,
+                                    "vm_ip": vm_ip,
+                                    "vm_ip_nmsk": vm_ip_nmsk,
+                                    "vm_id": vm_id,
+                                    "memory": memory,
+                                    "vpcu": vcpu
+                                }
+
+                        
 os.makedirs(os.path.dirname(yaml_file_path), exist_ok=True)
 with open(yaml_file_path, 'w') as yaml_file:
     yaml.dump(subnet_yaml_data, yaml_file)

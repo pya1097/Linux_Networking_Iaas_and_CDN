@@ -13,18 +13,18 @@
     memory: 1024
     vcpu: 1
 
-    interface_name: enp1s0 # static
+    interface_name: enp1s0
     vpc_incoming_port: 4567
     veth_vpns_v_inf: 11.11.11.2
     subnet_ip: 20.1.1.1
-    public_router_ip: 1.1.1.2 # static
+    public_router_ip: 1.1.1.2
     public_router_incoming_port: 4567
     vm_ip: 20.1.1.2/24
     vm_ip_nmsk: 20.1.1.2
-    vm_port: 8080 # Static
+    vm_port: 8080
 
     pub_namespace: public
-    vpc_id: c2v2
+    vpc_id: c2v2 
 
   tasks:   
     - name: Create the directory

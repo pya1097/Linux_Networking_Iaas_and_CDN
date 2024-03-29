@@ -34,27 +34,6 @@
         "customer_name": "mary",
         "customer_id": 2,
         "vpcs": {
-           "VPC1" : {
-                    "vpc_name": "VPC1",
-                    "vpc_id": 2,
-                    "vpc_ip": "10.10.11",
-                    "subnet_details": 
-                    {"subnet1" :  {
-                            "incoming_dnat_routing_port": 3456,
-                            "subnet_name": "subnet1",
-                            "subnet_ip": "192.168.151.0",
-                            "subnet_mask": "24",
-                            "subnet_id": 1
-                        },
-                    "subnet3"  :  {
-                            "incoming_dnat_routing_port": 2345,
-                            "subnet_name": "subnet3",
-                            "subnet_ip": "192.168.153.0",
-                            "subnet_mask": "24",
-                            "subnet_id": 2
-                        }
-                    }
-                },
           "VPC2" : {
                     "vpc_name": "VPC2",
                     "vpc_id": 1,
@@ -65,7 +44,14 @@
                             "subnet_name": "subnet2",
                             "subnet_ip": "192.168.152.0",
                             "subnet_mask": "24",
-                            "subnet_id": 1
+                            "subnet_id": 1,
+                            "vm_details":{
+                                "2":{
+                                    "vm_id": 2,
+                                    "memory": 1024,
+                                    "vcpu": 1
+                                }
+                            }
                         }
                     }
                 }
