@@ -9,7 +9,7 @@ input_client_id = sys.argv[1]
 input_vpc_id = sys.argv[2]
 
 current_directory = os.path.dirname(os.path.abspath(__file__))
-yaml_file_path = os.path.join(current_directory, '..', 'automation', 'variables', 'create_vpc_variables_test.yml')
+yaml_file_path = os.path.join(current_directory, '..', 'automation', 'variables', 'create_vpc_variables.yml')
 json_file_path = os.path.join(current_directory, '..', 'database', 'database.json')
 
 data = None

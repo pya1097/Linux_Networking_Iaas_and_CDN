@@ -12,7 +12,7 @@ input_subnet_id = sys.argv[3]
 print(input_client_id, input_vpc_id, input_subnet_id)
 
 current_directory = os.path.dirname(os.path.abspath(__file__))
-yaml_file_path = os.path.join(current_directory, '..', 'automation', 'variables', 'create_subnet_variables_test.yml')
+yaml_file_path = os.path.join(current_directory, '..', 'automation', 'variables', 'create_subnet_variables.yml')
 json_file_path = os.path.join(current_directory, '..', 'database', 'database.json')
 
 data = None
