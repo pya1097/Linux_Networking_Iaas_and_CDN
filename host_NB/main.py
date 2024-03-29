@@ -107,7 +107,7 @@ def create_or_update_vpc(yaml_data, json_file):
         yaml_data, vpc_ids = add_vpc_ids(yaml_data)
        
 
-    existing_data[yaml_data['customer_name']] = yaml_data
+    existing_data[yaml_data['customer_name']]['vpcs'] = yaml_data['vpcs']
     with open(json_file, "w") as file:
         json.dump(existing_data, file, indent=4)
 
@@ -169,8 +169,6 @@ async def create_upload_vpc_file(file: UploadFile):
             raise HTTPException(status_code=400, detail=f"Invalid YAML format: {e}")
         
         
-        
-
         with open("../database/database.json", "r") as file:
             orignal_data = json.load(file) 
         
@@ -291,6 +289,11 @@ async def create_upload_subnet_file(file: UploadFile):
             return {"message": "Your Subnet ID is: "+str(id)}
         except yaml.YAMLError as e:
             raise HTTPException(status_code=400, detail=f"Invalid YAML format: {e}")
+        
+        with open("../database/database.json", "r") as file:
+            orignal_data = json.load(file) 
+        
+
     else:
         raise HTTPException(status_code=400, detail="Uploaded file must be in YAML format.")
     
