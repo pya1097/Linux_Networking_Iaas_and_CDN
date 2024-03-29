@@ -61,12 +61,8 @@ with open(yaml_file_path, 'w') as yaml_file:
     yaml.dump(subnet_yaml_data, yaml_file)
 
 def run_ansible_playbook(playbook_path):
-    # Construct the command to run
-    command = ["sudo", "ansible-playbook", playbook_path]
-
-    # Execute the command
     try:
-        subprocess.run(command, check=True)
+        subprocess.run(["sudo", "ansible-playbook", playbook_path], check=True)
         print("Ansible playbook executed successfully.")
     except subprocess.CalledProcessError as e:
         print(f"Error executing Ansible playbook: {e}")
