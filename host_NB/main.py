@@ -148,7 +148,6 @@ def transform_vpc_input(yaml_data):
     return yaml_data
 
 def update_vpc_status(val):
-    # for vpc, vpc_data in data['vpcs'].items():
     val['_Status_'] = 'CREATED'
     val["_Timestamp_"] = str(datetime.now())
     return val
@@ -262,6 +261,8 @@ def add_subnet_ids(yaml_data_vpc_data,vpc,existing_data=None):
         for key, val in yaml_data_vpc_data.items():
             val['subnet_id'] = i
             val['incoming_dnat_routing_port'] = generate_random_port()
+            val['_Timestamp_'] = str(datetime.now())
+            val['_Status_'] = "IN_PROGRESS"
             subnet_ids[vpc+"_"+key] = i
             i+=1
     else:
@@ -270,11 +271,14 @@ def add_subnet_ids(yaml_data_vpc_data,vpc,existing_data=None):
         for key, val in yaml_data_vpc_data.items():
             val['subnet_id'] = n+i
             val['incoming_dnat_routing_port'] = generate_random_port()
+            val['_Timestamp_'] = str(datetime.now())
+            val['_Status_'] = "IN_PROGRESS"
             subnet_ids[vpc+"_"+key] = n+i
             existing_data[key] = val
             i+=1
         yaml_data_vpc_data = existing_data
     return yaml_data_vpc_data, subnet_ids
+
 
 @app.post("/uploadSubnetDetails/")
 async def create_upload_subnet_file(file: UploadFile):
@@ -286,12 +290,25 @@ async def create_upload_subnet_file(file: UploadFile):
             yaml_data = transform_subnet_input(yaml_data)
 
             id = create_or_update_subnet(yaml_data, "../database/database.json")
+
+            with open("../database/database.json", "r") as file:
+                orignal_data = json.load(file) 
+        
+            data = orignal_data[yaml_data["customer_name"]]
+
+            for vpc, vpc_data in data['vpcs'].items():
+                for subnet, subnet_data in vpc_data['subnet_details'].items():
+                    subnet_data = update_vpc_status(subnet_data)
+                    orignal_data[yaml_data["customer_name"]]['vpcs'][vpc]['subnet_details'][subnet] = subnet_data
+
+                    ##Call SB Script for creating Subnet
+
+            with open("../database/database.json", "w") as file:
+                json.dump(orignal_data, file, indent=4)
+            
             return {"message": "Your Subnet ID is: "+str(id)}
         except yaml.YAMLError as e:
-            raise HTTPException(status_code=400, detail=f"Invalid YAML format: {e}")
-        
-        with open("../database/database.json", "r") as file:
-            orignal_data = json.load(file) 
+            raise HTTPException(status_code=400, detail=f"Invalid YAML format: {e}") 
         
 
     else:
@@ -330,6 +347,8 @@ def add_vm_ids(yaml_data_vpc_data,vpc,subnet,existing_data=None):
     if not existing_data:
         for i, val in enumerate(yaml_data_vpc_data):
             vm_details[i+2] = val
+            val['_Timestamp_'] = str(datetime.now())
+            val['_Status_'] = "IN_PROGRESS"
             vm_ids[vpc+"_"+subnet+"_VM"+str(i+2)] = i+2
         yaml_data_vpc_data = vm_details
     else:
@@ -337,6 +356,8 @@ def add_vm_ids(yaml_data_vpc_data,vpc,subnet,existing_data=None):
         print('fine')
         for i, val in enumerate(yaml_data_vpc_data):
             vm_ids[vpc+"_"+subnet+"_VM"+str(i+2)] = n+i+2
+            val['_Timestamp_'] = str(datetime.now())
+            val['_Status_'] = "IN_PROGRESS"
             existing_data[n+i+2] = val
 
         yaml_data_vpc_data = existing_data
@@ -355,6 +376,23 @@ async def create_upload_VMfile(file: UploadFile):
             print(yaml_data)
 
             id = create_or_update_vm(yaml_data, "../database/database.json")
+            
+            with open("../database/database.json", "r") as file:
+                orignal_data = json.load(file) 
+        
+            data = orignal_data[yaml_data["customer_name"]]
+
+            for vpc, vpc_data in data['vpcs'].items():
+                for subnet, subnet_data in vpc_data['subnet_details'].items():
+                    for vm, vm_data in subnet_data['vm_details'].items():
+                        vm_data = update_vpc_status(vm_data)
+                        orignal_data[yaml_data["customer_name"]]['vpcs'][vpc]['subnet_details'][subnet]['vm_details'][vm] = vm_data
+
+                            ##Call SB Script for creating VM 
+
+            with open("../database/database.json", "w") as file:
+                json.dump(orignal_data, file, indent=4)
+
             return {"message": "Your Subnet ID is: "+str(id)}
         except yaml.YAMLError as e:
             raise HTTPException(status_code=400, detail=f"Invalid YAML format: {e}")
