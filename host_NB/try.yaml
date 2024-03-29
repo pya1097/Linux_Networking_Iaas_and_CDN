@@ -19,8 +19,3 @@ vpcs:
         vm_details:
           - memory: 2048
             vcpu: 2
-
-
-
-
-  
