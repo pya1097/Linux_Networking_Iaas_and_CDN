@@ -5,7 +5,7 @@ vpcs:
     subnet_details:
       - subnet_name:  subnet1
         subnet_ip: 10.10.10.0  
-        subent_mask: 24
+        subnet_mask: 24
         vm_details:
           - vm_name: VM1
             memory: 1024
@@ -17,7 +17,7 @@ vpcs:
     subnet_details:
       - subnet_name:  subnet2
         subnet_ip: 11.11.11.0
-        subent_mask: 24
+        subnet_mask: 24
         vm_details:
           - memory: 2048
             vcpu: 2

@@ -27,7 +27,6 @@ for client, client_data in data.items():
             vpc_id = vpc_details["vpc_id"]
             if str(vpc_id) == str(input_vpc_id):
                 subnet_details = vpc_details["subnet_details"]
-                vpc_yaml_data = {}
                 for subnet_name, subnet_info in subnet_details.items():
                     subnet_id = subnet_info["subnet_id"]
                     if str(subnet_id) == str(input_subnet_id):
@@ -60,7 +59,7 @@ os.makedirs(os.path.dirname(yaml_file_path), exist_ok=True)
 with open(yaml_file_path, 'w') as yaml_file:
     yaml.dump(subnet_yaml_data, yaml_file)
 
-yaml_archive_file_path = os.path.join(current_directory, '..', 'archive', 'automation', 'variables', 'create_vm_variables_', sn_id ,'.yml')
+yaml_archive_file_path = os.path.join(current_directory, '../archive/automation/variables/create_vm_variables_'+str(sn_id)+'.yml')
 os.makedirs(os.path.dirname(yaml_archive_file_path), exist_ok=True)
 with open(yaml_archive_file_path, 'w') as yaml_file:
     yaml.dump(subnet_yaml_data, yaml_file)
