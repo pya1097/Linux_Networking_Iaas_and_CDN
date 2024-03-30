@@ -1,20 +1,19 @@
 ---
 - name: Create a Customer Router Namespace
   hosts: localhost
-#  pub_nss: localpub_ns
   gather_facts: no
-  # vars_files:
-  #   - variables/create_vpc_variables.yml
-  vars:
-    pub_namespace: public
-    vpc_id: c2v2
-    ep_in_pub: ve_c2v2_pns
-    ep_in_vpc: ve_c2v2_v
-    pub_ns_ip: 11.11.11.1
-    pub_vpc_ep_ip: 11.11.11.1/30
-    vpc_ep_ip: 11.11.11.2/30
-    vpc_subnet: 11.11.11.0/30
-    public_route_inf: ve_ns
+  vars_files:
+    - variables/create_vpc_variables.yml
+  # vars:
+  #   pub_namespace: public
+  #   vpc_id: c2v2
+  #   ep_in_pub: ve_c2v2_pns
+  #   ep_in_vpc: ve_c2v2_v
+  #   pub_ns_ip: 11.11.11.1
+  #   pub_vpc_ep_ip: 11.11.11.1/30
+  #   vpc_ep_ip: 11.11.11.2/30
+  #   vpc_subnet: 11.11.11.0/30
+  #   public_route_inf: ve_ns
           
   tasks:
     - name: Create Namespaces
@@ -55,7 +54,7 @@
       ansible.builtin.command: "sudo ip netns exec {{ pub_namespace }} iptables -t nat -I POSTROUTING 1 -s {{ vpc_subnet }} -o {{ public_route_inf }} ! -d {{ vpc_subnet }} -j MASQUERADE"
         
     - name: Add ACCEPT rule from VPC interface to Internet interface
-      ansible.builtin.command: "sudo ip netns exec {{ pub_namespace }} iptables -I FORWARD -i {{ public_route_inf }} -i {{ ep_in_pub }} -j ACCEPT"
+      ansible.builtin.command: "sudo ip netns exec {{ pub_namespace }} iptables -I FORWARD -i {{ public_route_inf }} -o {{ ep_in_pub }} -j ACCEPT"
         
-    - name: Add ACCEPT rule from VPC interface to Internet interface
-      ansible.builtin.command: "sudo ip netns exec {{ pub_namespace }} iptables -I FORWARD -o {{ public_route_inf }} -o {{ ep_in_pub }} -j ACCEPT"
+    - name: Add ACCEPT rule from internet interface to VPC interface
+      ansible.builtin.command: "sudo ip netns exec {{ pub_namespace }} iptables -I FORWARD -o {{ public_route_inf }} -i {{ ep_in_pub }} -j ACCEPT"
