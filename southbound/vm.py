@@ -78,13 +78,13 @@ with open(yaml_archive_file_path, 'w') as yaml_file:
     yaml.dump(subnet_yaml_data, yaml_file)
 
 
-# def run_ansible_playbook(playbook_path):
-#     try:
-#         subprocess.run(["sudo", "ansible-playbook", playbook_path], check=True)
-#         print("Ansible playbook executed successfully.")
-#     except subprocess.CalledProcessError as e:
-#         print(f"Error executing Ansible playbook: {e}")
-#         return False
+def run_ansible_playbook(playbook_path):
+    try:
+        subprocess.run(["sudo", "ansible-playbook", playbook_path], check=True)
+        print("Ansible playbook executed successfully.")
+    except subprocess.CalledProcessError as e:
+        print(f"Error executing Ansible playbook: {e}")
+        return False
 
-# playbook_path = '../automation/ansible_create_vm.yaml'
-# run_ansible_playbook(playbook_path)
+playbook_path = '../automation/ansible_create_vm.yaml'
+run_ansible_playbook(playbook_path)
