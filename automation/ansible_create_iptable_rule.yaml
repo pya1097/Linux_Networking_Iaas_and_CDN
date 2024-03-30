@@ -1,0 +1,27 @@
+---
+- name: Configure iptables to allow traffic between two interfaces in a namespace
+  hosts: all
+  become: true
+  vars_prompt:
+    - name: namespace
+      prompt: "Enter the namespace"
+      private: no
+
+    - name: interface1
+      prompt: "Enter the first interface name"
+      private: no
+
+    - name: interface2
+      prompt: "Enter the second interface name"
+      private: no
+
+  tasks:
+    - name: Allow traffic from interface1 to interface2
+      ansible.builtin.command:
+        cmd: "ip netns exec {{ namespace }} iptables -A FORWARD -i {{ interface1 }} -o {{ interface2 }} -j ACCEPT"
+      ignore_errors: yes
+
+    - name: Allow traffic from interface2 to interface1
+      ansible.builtin.command:
+        cmd: "ip netns exec {{ namespace }} iptables -A FORWARD -i {{ interface2 }} -o {{ interface1 }} -j ACCEPT"
+      ignore_errors: yes
