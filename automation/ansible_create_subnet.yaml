@@ -37,6 +37,11 @@
       ansible.builtin.command: "sudo ip link set dev {{ br_id }} up"
     
   #-----------------------------------NETWORK CREATION----------------------------------------------
+    - name: Create the directory
+      ansible.builtin.file:
+        path: "{{ script_files_dir }}/{{ network_id }}"
+        state: directory
+
     - name: Copy network XML files to libvirt directory
       template:
         src: "{{ template_dir }}/network_definition.j2"

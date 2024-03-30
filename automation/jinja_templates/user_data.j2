@@ -29,4 +29,4 @@ runcmd:
   - ['sh', '-c', "sudo sed -i 's/^nameserver 127.0.0.53/nameserver 8.8.8.8/' /etc/resolv.conf"]
   - ['sh', '-c', 'apt update']
   - ['sh', '-c', 'sudo apt install python3-flask --yes']
-  - ['sh', '-c', 'python3 /root/main.py']
+  - ['sh', '-c', 'python3 /root/main.py&']
