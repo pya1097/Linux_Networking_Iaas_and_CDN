@@ -5,6 +5,7 @@ vpcs:
     subnet_details:
       - subnet_name:  Enter subnet name
         vm_details: 
-          - memory: Enter memory limit
+          - vm_name: Enter a vm name
+            memory: Enter memory limit
             vcpu: Enter number of vcpus
   

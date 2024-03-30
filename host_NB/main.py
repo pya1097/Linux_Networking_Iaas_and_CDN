@@ -335,6 +335,30 @@ async def create_upload_subnet_file(file: UploadFile):
 
 #-----------------------------------------VM Addition details------------------------------------------------
 
+def transform_vm_input(yaml_data):
+    vpcs_dict = {}
+    for vpc in yaml_data['vpcs']:
+        vpc_name = vpc['vpc_name']
+        vpcs_dict[vpc_name] = vpc
+
+        subnets_dict = {}
+        for subnet in vpc['subnet_details']:
+            subnet_name = subnet['subnet_name']
+            subnets_dict[subnet_name] = subnet
+
+            vms_dict = {}
+            for vm in subnet['vm_details']:
+                vm_name = vm['vm_name']
+                vms_dict[vm_name] = vm
+            subnets_dict[subnet_name]['vm_details'] = vms_dict
+        vpcs_dict[vpc_name]['subnet_details'] = subnets_dict
+
+    yaml_data['vpcs'] = vpcs_dict
+    return yaml_data
+
+
+
+
 def create_or_update_vm(yaml_data, json_file):
     resp = {}
     with open(json_file, "r") as file:
@@ -360,37 +384,49 @@ def create_or_update_vm(yaml_data, json_file):
 
 def add_vm_ids(yaml_data_vpc_data,vpc,subnet,existing_data=None):
     vm_ids = {}
-    vm_details = {}
+    # vm_details = {}
 
     if not existing_data:
-        for i, val in enumerate(yaml_data_vpc_data):
-            vm_details[i+2] = val
+        # for i, val in enumerate(yaml_data_vpc_data):
+        i=2
+        for key, val in yaml_data_vpc_data.items():
+            val['vm_id'] = i
             val['_Timestamp_'] = str(datetime.now())
             val['_Status_'] = "IN_PROGRESS"
-            vm_ids[vpc+"_"+subnet+"_VM"+str(i+2)] = i+2
-        yaml_data_vpc_data = vm_details
+            vm_ids[vpc+"_"+subnet+"_VM"+str(i+2)] = i
+            i+=1
     else:
         n = len(existing_data)
-        print('fine')
-        for i, val in enumerate(yaml_data_vpc_data):
-            vm_ids[vpc+"_"+subnet+"_VM"+str(i+2)] = n+i+2
+        i = 1
+        # for i, val in enumerate(yaml_data_vpc_data):
+        for key, val in yaml_data_vpc_data.items():
+            # vval['vm_id'] = im_ids[vpc+"_"+subnet+"_VM"+str(i+2)] = n+i+2
+            val['vm_id'] = n+i+2
             val['_Timestamp_'] = str(datetime.now())
             val['_Status_'] = "IN_PROGRESS"
-            existing_data[n+i+2] = val
+            existing_data[key] = val
 
         yaml_data_vpc_data = existing_data
 
     return yaml_data_vpc_data, vm_ids
 
+def upload_file(file: UploadFile = File(...)):
+    try:
+        file_path = os.path.join("../automation", "source.py")
+        with open(file_path, "wb") as buffer:
+            buffer.write(file.file.read())
+        return "success"
+    except Exception as e:
+        return "error"
 
 @app.post("/uploadVMDetails/")
-async def create_upload_VMfile(file: UploadFile):
-
+async def create_upload_VMfile(file: UploadFile, python_content: UploadFile):
+    upload_file(python_content)
     if file.filename.endswith(".yaml"):
         contents = await file.read()
         try:
             yaml_data = yaml.safe_load(contents)
-            yaml_data = transform_subnet_input(yaml_data)
+            yaml_data = transform_vm_input(yaml_data)
             print(yaml_data)
 
             id = create_or_update_vm(yaml_data, "../database/database.json")
@@ -403,24 +439,23 @@ async def create_upload_VMfile(file: UploadFile):
 
             print(yaml_data)
 
-            # for vpc, vpc_data in data['vpcs'].items():
-            #     for subnet, subnet_data in vpc_data['subnet_details'].items():
-            #         for vm, vm_data in subnet_data['vm_details'].items():
-            #             print(vpc, subnet, vm)
-            #             if vm in yaml_data['vpcs'][vpc]['subnet_details'][subnet]['vm_details']:
-            #                 vpc_id = vpc_data["vpc_id"]
-            #                 subnet_id = subnet_data["subnet_id"]
-            #                 vm_id = vm
-            #                 # try:
-            #                 #     subprocess.run(['python', '../southbound/vpc.py', str(customer_id), str(vpc_id), str(subnet_id),str(vm_id)])
-            #                 #     print("Script executed successfully.")
-            #                 # except subprocess.CalledProcessError as e:
-            #                 #     print("Error occurred while executing the script:", e)
-            #                 #     raise HTTPException(status_code=400, detail="VM creation failed.")
-            #                 vm_data = update_vpc_status(vm_data)
-            #                 orignal_data[yaml_data["customer_name"]]['vpcs'][vpc]['subnet_details'][subnet]['vm_details'][vm] = vm_data
+            for vpc, vpc_data in data['vpcs'].items():
+                for subnet, subnet_data in vpc_data['subnet_details'].items():
+                    for vm, vm_data in subnet_data['vm_details'].items():
+                        if vm in yaml_data['vpcs'][vpc]['subnet_details'][subnet]['vm_details']:
+                            vpc_id = vpc_data["vpc_id"]
+                            subnet_id = subnet_data["subnet_id"]
+                            vm_id = vm
+                            # try:
+                            #     subprocess.run(['python', '../southbound/vpc.py', str(customer_id), str(vpc_id), str(subnet_id),str(vm_id)])
+                            #     print("Script executed successfully.")
+                            # except subprocess.CalledProcessError as e:
+                            #     print("Error occurred while executing the script:", e)
+                            #     raise HTTPException(status_code=400, detail="VM creation failed.")
+                            vm_data = update_vpc_status(vm_data)
+                            orignal_data[yaml_data["customer_name"]]['vpcs'][vpc]['subnet_details'][subnet]['vm_details'][vm] = vm_data
 
-            #                 ##Call SB Script for creating VM 
+                            ##Call SB Script for creating VM 
 
             with open("../database/database.json", "w") as file:
                 json.dump(orignal_data, file, indent=4)
