@@ -171,23 +171,30 @@ async def create_upload_vpc_file(file: UploadFile):
         with open("../database/database.json", "r") as file:
             orignal_data = json.load(file) 
         
+        customer_id = orignal_data[yaml_data["customer_name"]]["customer_id"]
         data = orignal_data[yaml_data["customer_name"]]
 
         for key, val in data["vpcs"].items():
-
-        # # Executing vpc southbound
-        # try:
-        #     subprocess.run(['python', '../southbound/vpc.py','',''])
-        #     print("Script executed successfully.")
-        #     return {"message": "Your VPC ID is: "+str(id)}
-        # except subprocess.CalledProcessError as e:
-        #     print("Error occurred while executing the script:", e)
+            vpc_id = val["vpc_id"]
             if key in yaml_data['vpcs']:
+            # Executing vpc southbound
+                try:
+                    subprocess.run(['python', '../southbound/vpc.py', str(customer_id), str(vpc_id)])
+                    print("Script executed successfully.")
+                except subprocess.CalledProcessError as e:
+                    print("Error occurred while executing the script:", e)
+                    raise HTTPException(status_code=400, detail="VPC creation failed.")
                 val = update_vpc_status(val)
+
         
+
         orignal_data[yaml_data['customer_name']] = data
         with open("../database/database.json", "w") as file:
             json.dump(orignal_data, file, indent=4)
+        return {"message": "Your VPC ID is: "+str(id)}
+            
+        
+        
 
 
     else:
@@ -294,15 +301,25 @@ async def create_upload_subnet_file(file: UploadFile):
             with open("../database/database.json", "r") as file:
                 orignal_data = json.load(file) 
         
+            customer_id = orignal_data[yaml_data["customer_name"]]["customer_id"]
             data = orignal_data[yaml_data["customer_name"]]
 
             for vpc, vpc_data in data['vpcs'].items():
                 for subnet, subnet_data in vpc_data['subnet_details'].items():
                     if subnet in yaml_data['vpcs'][vpc]['subnet_details']:
+                        vpc_id = vpc_data["vpc_id"]
+                        subnet_id = subnet_data["subnet_id"]
+                        # Executing vpc southbound
+                        try:
+                            subprocess.run(['python', '../southbound/vpc.py', str(customer_id), str(vpc_id), str(subnet_id)])
+                            print("Script executed successfully.")
+                            return {"message": "Your VPC ID is: "+str(id)}
+                        except subprocess.CalledProcessError as e:
+                            print("Error occurred while executing the script:", e)
+
                         subnet_data = update_vpc_status(subnet_data)
                         orignal_data[yaml_data["customer_name"]]['vpcs'][vpc]['subnet_details'][subnet] = subnet_data
 
-                    ##Call SB Script for creating Subnet
 
             with open("../database/database.json", "w") as file:
                 json.dump(orignal_data, file, indent=4)
@@ -380,7 +397,8 @@ async def create_upload_VMfile(file: UploadFile):
             
             with open("../database/database.json", "r") as file:
                 orignal_data = json.load(file) 
-        
+            
+            customer_id = orignal_data[yaml_data["customer_name"]]["customer_id"]
             data = orignal_data[yaml_data["customer_name"]]
 
             for vpc, vpc_data in data['vpcs'].items():

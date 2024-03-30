@@ -55,6 +55,22 @@
         "customer_name": "johnny",
         "customer_id": 2,
         "_Timestamp_": "2024-03-29 16:32:14.000733",
-        "_Status_": "CREATED"
+        "_Status_": "CREATED",
+        "vpcs": {
+            "VPC1": {
+                "vpc_name": "VPC1",
+                "vpc_id": 1,
+                "vpc_ip": "148.114.51",
+                "_Timestamp_": "2024-03-29 20:08:46.660711",
+                "_Status_": "CREATED"
+            },
+            "VPC2": {
+                "vpc_name": "VPC2",
+                "vpc_id": 2,
+                "vpc_ip": "221.6.195",
+                "_Timestamp_": "2024-03-29 20:08:46.774036",
+                "_Status_": "CREATED"
+            }
+        }
     }
 }
