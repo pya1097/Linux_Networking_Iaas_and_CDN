@@ -1,14 +1,14 @@
 customer_name: johnny
 customer_id: 2
 
-customer_name: john
-customer_id: 1
+customer_name: johnny
+customer_id: 2
 vpcs:
   - vpc_name: VPC1
   - vpc_name: VPC2
 
-customer_name: john
-customer_id: 1
+customer_name: johnny
+customer_id: 2
 vpcs:
   - vpc_name: VPC1
     subnet_details:
@@ -21,8 +21,8 @@ vpcs:
         subnet_ip: 11.11.11.0
         subent_mask: 24
 
-customer_name: john
-customer_id: 1
+customer_name: johnny
+customer_id: 2
 vpcs:
   - vpc_name: VPC1
     subnet_details:

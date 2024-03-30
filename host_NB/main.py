@@ -311,11 +311,11 @@ async def create_upload_subnet_file(file: UploadFile):
                         subnet_id = subnet_data["subnet_id"]
                         # Executing vpc southbound
                         try:
-                            subprocess.run(['python', '../southbound/vpc.py', str(customer_id), str(vpc_id), str(subnet_id)])
+                            subprocess.run(['python', '../southbound/subnet.py', str(customer_id), str(vpc_id), str(subnet_id)])
                             print("Script executed successfully.")
-                            return {"message": "Your VPC ID is: "+str(id)}
                         except subprocess.CalledProcessError as e:
                             print("Error occurred while executing the script:", e)
+                            raise HTTPException(status_code=400, detail="Subnet creation failed.")
 
                         subnet_data = update_vpc_status(subnet_data)
                         orignal_data[yaml_data["customer_name"]]['vpcs'][vpc]['subnet_details'][subnet] = subnet_data
@@ -401,14 +401,26 @@ async def create_upload_VMfile(file: UploadFile):
             customer_id = orignal_data[yaml_data["customer_name"]]["customer_id"]
             data = orignal_data[yaml_data["customer_name"]]
 
-            for vpc, vpc_data in data['vpcs'].items():
-                for subnet, subnet_data in vpc_data['subnet_details'].items():
-                    for vm, vm_data in subnet_data['vm_details'].items():
-                        if vm in yaml_data['vpcs'][vpc]['subent_details'][subnet]['vm_details']:
-                            vm_data = update_vpc_status(vm_data)
-                            orignal_data[yaml_data["customer_name"]]['vpcs'][vpc]['subnet_details'][subnet]['vm_details'][vm] = vm_data
+            print(yaml_data)
 
-                            ##Call SB Script for creating VM 
+            # for vpc, vpc_data in data['vpcs'].items():
+            #     for subnet, subnet_data in vpc_data['subnet_details'].items():
+            #         for vm, vm_data in subnet_data['vm_details'].items():
+            #             print(vpc, subnet, vm)
+            #             if vm in yaml_data['vpcs'][vpc]['subnet_details'][subnet]['vm_details']:
+            #                 vpc_id = vpc_data["vpc_id"]
+            #                 subnet_id = subnet_data["subnet_id"]
+            #                 vm_id = vm
+            #                 # try:
+            #                 #     subprocess.run(['python', '../southbound/vpc.py', str(customer_id), str(vpc_id), str(subnet_id),str(vm_id)])
+            #                 #     print("Script executed successfully.")
+            #                 # except subprocess.CalledProcessError as e:
+            #                 #     print("Error occurred while executing the script:", e)
+            #                 #     raise HTTPException(status_code=400, detail="VM creation failed.")
+            #                 vm_data = update_vpc_status(vm_data)
+            #                 orignal_data[yaml_data["customer_name"]]['vpcs'][vpc]['subnet_details'][subnet]['vm_details'][vm] = vm_data
+
+            #                 ##Call SB Script for creating VM 
 
             with open("../database/database.json", "w") as file:
                 json.dump(orignal_data, file, indent=4)

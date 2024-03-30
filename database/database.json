@@ -62,14 +62,36 @@
                 "vpc_id": 1,
                 "vpc_ip": "148.114.51",
                 "_Timestamp_": "2024-03-29 20:08:46.660711",
-                "_Status_": "CREATED"
+                "_Status_": "CREATED",
+                "subnet_details": {
+                    "subnet1": {
+                        "subnet_name": "subnet1",
+                        "subnet_ip": "10.10.10.0",
+                        "subent_mask": 24,
+                        "subnet_id": 1,
+                        "incoming_dnat_routing_port": "6017",
+                        "_Timestamp_": "2024-03-29 20:19:33.178677",
+                        "_Status_": "CREATED"
+                    }
+                }
             },
             "VPC2": {
                 "vpc_name": "VPC2",
                 "vpc_id": 2,
                 "vpc_ip": "221.6.195",
                 "_Timestamp_": "2024-03-29 20:08:46.774036",
-                "_Status_": "CREATED"
+                "_Status_": "CREATED",
+                "subnet_details": {
+                    "subnet2": {
+                        "subnet_name": "subnet2",
+                        "subnet_ip": "11.11.11.0",
+                        "subent_mask": 24,
+                        "subnet_id": 1,
+                        "incoming_dnat_routing_port": "1506",
+                        "_Timestamp_": "2024-03-29 20:19:33.301760",
+                        "_Status_": "CREATED"
+                    }
+                }
             }
         }
     }
