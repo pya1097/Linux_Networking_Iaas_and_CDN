@@ -68,10 +68,15 @@ for client, client_data in data.items():
                                     "vpcu": vcpu
                                 }
 
-                        
 os.makedirs(os.path.dirname(yaml_file_path), exist_ok=True)
 with open(yaml_file_path, 'w') as yaml_file:
     yaml.dump(subnet_yaml_data, yaml_file)
+
+yaml_archive_file_path = os.path.join(current_directory, '..', 'archive', 'automation', 'variables', 'create_vm_variables_', vm_id ,'.yml')
+os.makedirs(os.path.dirname(yaml_archive_file_path), exist_ok=True)
+with open(yaml_archive_file_path, 'w') as yaml_file:
+    yaml.dump(subnet_yaml_data, yaml_file)
+
 
 # def run_ansible_playbook(playbook_path):
 #     try:
