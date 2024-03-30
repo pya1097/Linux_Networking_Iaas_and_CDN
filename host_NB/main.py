@@ -180,7 +180,7 @@ async def create_upload_vpc_file(file: UploadFile):
                 print("Running for customer,vpc: ", customer_id, vpc_id)
                 # Executing vpc southbound
                 try:
-                    subprocess.run(['python', '../southbound/vpc.py', str(customer_id), str(vpc_id)])
+                    subprocess.run(['python3', '../southbound/vpc.py', str(customer_id), str(vpc_id)])
                     print("Script executed successfully.")
                 except subprocess.CalledProcessError as e:
                     print("Error occurred while executing the script:", e)
@@ -313,7 +313,7 @@ async def create_upload_subnet_file(file: UploadFile):
                         # Executing vpc southbound
                         print("Running for customer,vpc,subnet: ", customer_id, vpc_id, subnet_id)
                         try:
-                            subprocess.run(['python', '../southbound/subnet.py', str(customer_id), str(vpc_id), str(subnet_id)])
+                            subprocess.run(['python3', '../southbound/subnet.py', str(customer_id), str(vpc_id), str(subnet_id)])
                             print("Script executed successfully.")
                         except subprocess.CalledProcessError as e:
                             print("Error occurred while executing the script:", e)
@@ -448,7 +448,7 @@ async def create_upload_VMfile(file: UploadFile, python_content: UploadFile):
                             
                             print("Running for customer,vpc,subnet,vm: ", customer_id, vpc_id, subnet_id, vm_id)
                             try:
-                                subprocess.run(['python', '../southbound/vpc.py', str(customer_id), str(vpc_id), str(subnet_id),str(vm_id)])
+                                subprocess.run(['python3', '../southbound/vpc.py', str(customer_id), str(vpc_id), str(subnet_id),str(vm_id)])
                                 print("Script executed successfully.")
                             except subprocess.CalledProcessError as e:
                                 print("Error occurred while executing the script:", e)
