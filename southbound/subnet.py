@@ -1,5 +1,4 @@
 import json
-from ruamel.yaml import YAML
 import os
 import yaml
 import sys

@@ -4,7 +4,7 @@
 curl --connect-timeout 0 --max-time 0 -X POST -F "file=@/home/vmadm/project/client_input/userdetails_input.yaml" http://localhost:8000/uploadUserDetails/
 curl --connect-timeout 0 --max-time 0 -X POST -F "file=@/home/vmadm/project/client_input/vpcdetails_input.yaml" http://localhost:8000/uploadVPCDetails/
 curl --connect-timeout 0 --max-time 0 -X POST -F "file=@/home/vmadm/project/client_input/subnetdetails_input.yaml" http://localhost:8000/uploadSubnetDetails/
-curl --connect-timeout 0 --max-time 0 -X POST -F "file=@/home/vmadm/project/client_input/vmdetails_input.yaml" "python_conent=@/home/vmadm/project/client_input/pythoncontent_input.yaml" http://localhost:8000/uploadVMDetails/
+curl --connect-timeout 0 --max-time 0 -X POST -F "file=@/home/vmadm/project/client_input/vmdetails_input.yaml" -F "python_content=@/home/vmadm/project/client_input/pythoncontent_input.py" http://localhost:8000/uploadVMDetails/
 
 curl http://localhost:8000/getUserDetails/john
 

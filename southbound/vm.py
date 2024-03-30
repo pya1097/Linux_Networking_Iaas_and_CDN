@@ -1,5 +1,4 @@
 import json
-from ruamel.yaml import YAML
 import os
 import yaml
 import sys
@@ -65,7 +64,7 @@ for client, client_data in data.items():
                                     "vm_ip_nmsk": vm_ip_nmsk,
                                     "vm_id": vm_id,
                                     "memory": memory,
-                                    "vpcu": vcpu
+                                    "vcpu": vcpu
                                 }
 
 os.makedirs(os.path.dirname(yaml_file_path), exist_ok=True)
