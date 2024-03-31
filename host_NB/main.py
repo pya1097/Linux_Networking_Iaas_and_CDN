@@ -5,7 +5,10 @@ import json
 import os
 import random
 import subprocess
+from fastapi.responses import JSONResponse
+from flask import current_app
 from datetime import datetime
+from flask import jsonify
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import FileResponse
@@ -314,7 +317,7 @@ async def create_upload_subnet_file(file: UploadFile):
 
             for vpc, vpc_data in data['vpcs'].items():
                 for subnet, subnet_data in vpc_data['subnet_details'].items():
-                    if subnet in yaml_data['vpcs'][vpc]['subnet_details']:
+                    if vpc in yaml_data['vpcs'] and subnet in yaml_data['vpcs'][vpc]['subnet_details']:
                         vpc_id = vpc_data["vpc_id"]
                         subnet_id = subnet_data["subnet_id"]
                         # Executing vpc southbound
@@ -448,7 +451,7 @@ async def create_upload_VMfile(file: UploadFile, python_content: UploadFile):
             for vpc, vpc_data in data['vpcs'].items():
                 for subnet, subnet_data in vpc_data['subnet_details'].items():
                     for vm, vm_data in subnet_data['vm_details'].items():
-                        if vm in yaml_data['vpcs'][vpc]['subnet_details'][subnet]['vm_details']:
+                        if vpc in yaml_data['vpcs'] and subnet in  yaml_data['vpcs'][vpc]['subnet_details'] and  vm in yaml_data['vpcs'][vpc]['subnet_details'][subnet]['vm_details']:
                             vpc_id = vpc_data["vpc_id"]
                             subnet_id = subnet_data["subnet_id"]
                             vm_id = vm_data["vm_id"]
@@ -473,7 +476,30 @@ async def create_upload_VMfile(file: UploadFile, python_content: UploadFile):
             raise HTTPException(status_code=400, detail=f"Invalid YAML format: {e}")
     else:
         raise HTTPException(status_code=400, detail="Uploaded file must be in YAML format.")
+#------------------------------------------------------Create Ip table rules-------------------------------------------------------###
+    
 
+
+@app.post("/uploadNamespaceDetails/")
+async def upload_namespace_details(file: UploadFile):
+    if file.filename.endswith(".yaml"):
+        contents = await file.read()
+        try:
+            # Save the YAML file
+            with open("../automation/variables/create_ip_table_rule.yaml", "wb") as f:
+                f.write(contents)
+
+            # Run the Ansible playbook
+            # subprocess.run(['ansible-playbook', '../automation/ansible_create_iptable_rule.yaml'])
+            print("Ansible playbook executed successfully.")
+            return JSONResponse(content={"message": "Namespace details uploaded and Ansible playbook executed successfully."}, status_code=200)
+        except Exception as e:
+            print("Error:", e)
+            return JSONResponse(content={"error": "Failed to upload namespace details or execute Ansible playbook."}, status_code=500)
+    else:
+        return JSONResponse(content={"error": "Uploaded file must be in YAML format."}, status_code=400)
+
+    
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

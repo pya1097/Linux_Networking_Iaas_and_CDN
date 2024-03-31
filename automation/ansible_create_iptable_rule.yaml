@@ -1,27 +1,19 @@
 ---
-- name: Configure iptables to allow traffic between two interfaces in a namespace
+- name: Configure iptables to allow traffic between multiple pairs of interfaces in a namespace
   hosts: all
   become: true
-  vars_prompt:
-    - name: namespace
-      prompt: "Enter the namespace"
-      private: no
-
-    - name: interface1
-      prompt: "Enter the first interface name"
-      private: no
-
-    - name: interface2
-      prompt: "Enter the second interface name"
-      private: no
+  vars_files:
+    - variables/create_namespace_variables.yml
 
   tasks:
-    - name: Allow traffic from interface1 to interface2
+    - name: Allow traffic between interface pairs
       ansible.builtin.command:
-        cmd: "ip netns exec {{ namespace }} iptables -A FORWARD -i {{ interface1 }} -o {{ interface2 }} -j ACCEPT"
+        cmd: "ip netns exec {{ namespace }} iptables -A FORWARD -i {{ item.interface1 }} -o {{ item.interface2 }} -j ACCEPT"
+      loop: "{{ interface_pairs }}"
       ignore_errors: yes
 
-    - name: Allow traffic from interface2 to interface1
+    - name: Allow traffic between reverse interface pairs
       ansible.builtin.command:
-        cmd: "ip netns exec {{ namespace }} iptables -A FORWARD -i {{ interface2 }} -o {{ interface1 }} -j ACCEPT"
+        cmd: "ip netns exec {{ namespace }} iptables -A FORWARD -i {{ item.interface2 }} -o {{ item.interface1 }} -j ACCEPT"
+      loop: "{{ interface_pairs }}"
       ignore_errors: yes
