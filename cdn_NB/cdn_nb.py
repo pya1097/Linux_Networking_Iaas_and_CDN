@@ -31,7 +31,7 @@ def generate_random_ip():
     """Generate a random IP address within the 192.168.0.0/16 subnet."""
     return f"192.168.{random.randint(0, 255)}.{random.randint(0, 255)}"
 
-def create_and_upload_subnet_yaml(tenant_id, tenant_name, vpc_id, file_location, edge_server_responses):
+def create_and_upload_subnet_yaml(tenant_id, tenant_name, vpc_id, edge_server_responses):
     """Generates and uploads subnet YAML file."""
     data = {
         'customer_name': CUSTOMER_NAME,
@@ -54,7 +54,7 @@ def create_and_upload_subnet_yaml(tenant_id, tenant_name, vpc_id, file_location,
 
     return upload_yaml('data.yaml', 'http://1.1.1.1:8000/uploadSubnetDetails')
 
-def create_and_upload_vm_yaml(edge_server_responses, tenant_name, file_location):
+def create_and_upload_vm_yaml(edge_server_responses, tenant_name):
     """Generates and uploads VM YAML file."""
     yaml_data = {
         'customer_name': CUSTOMER_NAME,
@@ -136,7 +136,7 @@ def init_data_gathering():
     tenant_id = data.get('tenant_id')
     tenant_name = data.get('tenant_name')
     vpc_id = data.get('vpc_id')
-    file_location = data.get('file_location')
+
 
     edge_server_responses = []
     for edge_server, vpc in edge_server_vpc_mapping.items():
@@ -144,9 +144,9 @@ def init_data_gathering():
         if include_server == 'yes':
             edge_server_responses.append({'name': edge_server, 'vpc_id': vpc})
 
-    if tenant_id and tenant_name and vpc_id and file_location:
-        if create_and_upload_subnet_yaml(tenant_id, tenant_name, vpc_id, file_location, edge_server_responses):
-            if create_and_upload_vm_yaml(edge_server_responses, tenant_name, file_location):
+    if tenant_id and tenant_name and vpc_id:
+        if create_and_upload_subnet_yaml(tenant_id, tenant_name, vpc_id, edge_server_responses):
+            if create_and_upload_vm_yaml(edge_server_responses, tenant_name):
                 create_namespace_yaml(tenant_id, vpc_id, edge_server_responses)
         return jsonify({"message": "Data gathering and processing completed successfully"})
     else:
