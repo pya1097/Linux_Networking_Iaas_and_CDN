@@ -6,13 +6,19 @@ import os
 import random
 import subprocess
 from datetime import datetime
-
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import FileResponse
 
 app = FastAPI()
 
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["*"],
+)
 @app.get("/downloadTemplate/{template_name}")
 async def download_file(template_name: str):
     
@@ -290,6 +296,7 @@ def add_subnet_ids(yaml_data_vpc_data,vpc,existing_data=None):
 
 @app.post("/uploadSubnetDetails/")
 async def create_upload_subnet_file(file: UploadFile):
+    print("I m here")
 
     if file.filename.endswith(".yaml"):
         contents = await file.read()
