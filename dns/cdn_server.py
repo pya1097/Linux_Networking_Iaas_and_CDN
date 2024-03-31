@@ -15,11 +15,12 @@ with open("../database/dns_database.json", "r") as file:
 def handle_request():
     website = request.args.get("website")
     user_location = request.args.get("location")
+    preferred_server = int(request.args.get("preferred_server"))
 
-    server_location = proximity[user_location]
+    server_location = proximity[user_location][preferred_server]
     if website in database:
         dst_list = []
-        for  loc in database[website]:
+        for loc in database[website]:
             if server_location.lower() in loc.lower():
                 dst_list.append(database[website][server_location])
         
