@@ -525,7 +525,7 @@ async def upload_namespace_details(file: UploadFile):
                 f.write(contents)
 
             # Run the Ansible playbook
-            # subprocess.run(['ansible-playbook', '../automation/ansible_create_iptable_rule.yaml'])
+            subprocess.run(['ansible-playbook', '../automation/ansible_create_iptable_rule.yaml'])
             print("Ansible playbook executed successfully.")
             return JSONResponse(content={"message": "Namespace details uploaded and Ansible playbook executed successfully."}, status_code=200)
         except Exception as e:

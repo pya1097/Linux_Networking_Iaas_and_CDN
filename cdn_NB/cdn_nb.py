@@ -29,7 +29,7 @@ edge_server_interface_mapping = {
 
 def generate_random_ip():
     """Generate a random IP address within the 192.168.0.0/16 subnet."""
-    return f"192.168.{random.randint(0, 255)}.{random.randint(0, 255)}"
+    return f"{random.randint(0, 255)}.{random.randint(0, 255)}.{random.randint(0, 255)}.0"
 
 def create_and_upload_subnet_yaml(tenant_id, tenant_name, vpc_id, edge_server_responses):
     """Generates and uploads subnet YAML file."""
