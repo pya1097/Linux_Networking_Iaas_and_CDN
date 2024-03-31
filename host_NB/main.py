@@ -483,6 +483,8 @@ async def create_upload_VMfile(file: UploadFile, python_content: UploadFile, dat
                 if 'subnet_details' not in vpc_data:
                     continue
                 for subnet, subnet_data in vpc_data['subnet_details'].items():
+                    if 'vm_details' not in subnet_data:
+                        continue
                     for vm, vm_data in subnet_data['vm_details'].items():
                         if vpc in yaml_data['vpcs'] and subnet in  yaml_data['vpcs'][vpc]['subnet_details'] and  vm in yaml_data['vpcs'][vpc]['subnet_details'][subnet]['vm_details']:
                             vpc_id = vpc_data["vpc_id"]
