@@ -423,9 +423,9 @@ def add_vm_ids(yaml_data_vpc_data,vpc,subnet,existing_data=None):
 
     return yaml_data_vpc_data, vm_ids
 
-def upload_file(file: UploadFile = File(...)):
+def upload_file(filename, file: UploadFile = File(...)):
     try:
-        file_path = os.path.join("../automation", "source.py")
+        file_path = os.path.join("../automation", filename)
         with open(file_path, "wb") as buffer:
             buffer.write(file.file.read())
         return "success"
@@ -433,8 +433,11 @@ def upload_file(file: UploadFile = File(...)):
         return "error"
 
 @app.post("/uploadVMDetails/")
-async def create_upload_VMfile(file: UploadFile, python_content: UploadFile):
-    upload_file(python_content)
+async def create_upload_VMfile(file: UploadFile, python_content: UploadFile, data_content: UploadFile=None):
+    upload_file("source.py", python_content)
+    if data_content:
+        upload_file("optional.txt", data_content)
+
     if file.filename.endswith(".yaml"):
         contents = await file.read()
         try:

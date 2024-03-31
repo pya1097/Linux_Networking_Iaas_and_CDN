@@ -21,6 +21,9 @@ write_files:
     content: |
 {{ content }}
 
+  - path: /root/data.txt
+    content: |
+{{ optional_content }}
 
 runcmd:
   - ['sh', '-c', 'netplan generate']

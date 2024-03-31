@@ -50,10 +50,17 @@
         dest: "/var/lib/libvirt/images/{{ vm_id }}/meta-data"
       become: yes
 
-    - name: Read file and add 5 indents
+    - name: Read python file and add 5 indents
       ansible.builtin.shell:
         cmd: |
           sed -i 's/^/     /' source.py
+      args:
+        executable: /bin/bash
+    
+    - name: Read data file and add 5 indents
+      ansible.builtin.shell:
+        cmd: |
+          sed -i 's/^/     /' optional.txt
       args:
         executable: /bin/bash
 
@@ -62,20 +69,24 @@
       register: python_file_content
       changed_when: false
 
+    - name: Read text file input from cat command
+      shell: cat optional.txt
+      register: data_file_content
+      changed_when: false
+
     - name: Create Jinja2 file
       template:
         src: "{{ template_dir }}/user_data.j2"
         dest: "/var/lib/libvirt/images/{{ vm_id }}/user-data"
       vars:
         content: "{{ python_file_content.stdout }}"
-
+        optional_content: "{{ data_file_content.stdout }}"
 
     - name: Run genisoimage command
       command: genisoimage -output "/var/lib/libvirt/images/{{ vm_id }}/{{ vm_id }}-cidata.iso" -volid cidata -joliet -rock meta-data user-data
       args:
         chdir: "/var/lib/libvirt/images/{{ vm_id }}"
       become: yes
-
 
     - name: Generate XML files for VM definitions
       template:
