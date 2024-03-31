@@ -3,7 +3,7 @@
   hosts: all
   become: true
   vars_files:
-    - variables/create_namespace_variables.yml
+    - variables/create_ip_table_rule.yaml
 
   tasks:
     - name: Allow traffic between interface pairs

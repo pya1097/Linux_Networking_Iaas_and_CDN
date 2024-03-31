@@ -7,21 +7,23 @@ import random
 app = Flask(__name__)
 
 # Static customer and VM details
-CUSTOMER_NAME = 'john'
-CUSTOMER_ID = 1
-VM_MEMORY = "4GB"
-VM_VCPU = "2"
-python_file_path='cdn_NB\source.py'
+CUSTOMER_NAME = 'CDN'
+CUSTOMER_ID = 5
+VM_MEMORY = "1024"
+VM_VCPU = "1"
+python_file_path='source.py'
 # Mapping of edge servers to their VPC IDsn
 edge_server_vpc_mapping = {
-    'India': 'VPC1',
-    'Aus': 'VPC2'
+    'INDIA': 'INDIA',
+    'AUS': 'AUS',
+    'USA': 'USA'
 }
 
 # Mapping of edge servers to their interfaces
 edge_server_interface_mapping = {
-    'India': 'eth0',
-    'Aus': 'eth1'
+    'INDIA': 've_c5v2_pns',
+    'AUS': 've_c5v3_pns',
+    'USA': 've_c5v4_pns'
 }
 
 def generate_random_ip():
@@ -42,14 +44,14 @@ def create_and_upload_subnet_yaml(tenant_id, tenant_name, vpc_id, file_location,
             'subnet_details': [{
                 'subnet_name': f"{tenant_name}_{edge_server['name']}",
                 'subnet_ip': generate_random_ip(),
-                'subent_mask': 24  
+                'subnet_mask': 24
             }]
         })
 
     with open('data.yaml', 'w') as yaml_file:
         yaml.dump(data, yaml_file, default_flow_style=False)
 
-    return upload_yaml('data.yaml', 'http://localhost:8000/uploadSubnetDetails')
+    return upload_yaml('data.yaml', 'http://1.1.1.1:8000/uploadSubnetDetails')
 
 def create_and_upload_vm_yaml(edge_server_responses, tenant_name, file_location):
     """Generates and uploads VM YAML file."""
@@ -72,11 +74,11 @@ def create_and_upload_vm_yaml(edge_server_responses, tenant_name, file_location)
     with open('vm_details.yaml', 'w') as yaml_file:
         yaml.dump(yaml_data, yaml_file, default_flow_style=False)
 
-    return upload_yaml_vm('vm_details.yaml', 'http://localhost:8000/uploadVMDetails')
+    return upload_yaml_vm('vm_details.yaml', 'http://1.1.1.1:8000/uploadVMDetails')
 
 def create_namespace_yaml(tenant_id, vpc_id, edge_server_responses):
     """Generates and uploads namespace YAML file."""
-    namespace = "your_namespace"
+    namespace = "public"
     interface_pairs = []
 
     for edge_server in edge_server_responses:
@@ -93,7 +95,7 @@ def create_namespace_yaml(tenant_id, vpc_id, edge_server_responses):
     with open('namespace.yaml', 'w') as yaml_file:
         yaml.dump(namespace_data, yaml_file, default_flow_style=False)
 
-    return upload_yaml('namespace.yaml', 'http://localhost:8000/uploadNamespaceDetails')
+    return upload_yaml('namespace.yaml', 'http://1.1.1.1:8000/uploadNamespaceDetails')
 
 def upload_yaml(yaml_file_path, url):
     """Uploads the specified YAML file to the provided URL."""
@@ -108,7 +110,7 @@ def upload_yaml(yaml_file_path, url):
         except requests.exceptions.RequestException as e:
             print(f"Failed to upload {yaml_file_path}: {e}")
             return False
-        
+
 def upload_yaml_vm(yaml_file_path, url):
     """Uploads the specified YAML file to the provided URL."""
     files = {}
@@ -147,7 +149,7 @@ def init_data_gathering():
         return jsonify({"message": "Data gathering and processing completed successfully"})
     else:
         return jsonify({"error": "Missing parameters"}), 400
-  
+
 
 @app.route('/get-data', methods=['GET'])
 def get_data():
@@ -157,4 +159,4 @@ def get_data():
     return jsonify(data)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    app.run(host='30.30.30.2', port=8080)

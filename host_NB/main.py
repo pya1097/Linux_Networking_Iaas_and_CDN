@@ -6,9 +6,8 @@ import os
 import random
 import subprocess
 from fastapi.responses import JSONResponse
-from flask import current_app
 from datetime import datetime
-from flask import jsonify
+
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import FileResponse
@@ -316,6 +315,8 @@ async def create_upload_subnet_file(file: UploadFile):
             data = orignal_data[yaml_data["customer_name"]]
 
             for vpc, vpc_data in data['vpcs'].items():
+                if 'subnet_details' not in vpc_data:
+                    continue
                 for subnet, subnet_data in vpc_data['subnet_details'].items():
                     if vpc in yaml_data['vpcs'] and subnet in yaml_data['vpcs'][vpc]['subnet_details']:
                         vpc_id = vpc_data["vpc_id"]
@@ -449,6 +450,8 @@ async def create_upload_VMfile(file: UploadFile, python_content: UploadFile):
             data = orignal_data[yaml_data["customer_name"]]
 
             for vpc, vpc_data in data['vpcs'].items():
+                if 'subnet_details' not in vpc_data:
+                    continue
                 for subnet, subnet_data in vpc_data['subnet_details'].items():
                     for vm, vm_data in subnet_data['vm_details'].items():
                         if vpc in yaml_data['vpcs'] and subnet in  yaml_data['vpcs'][vpc]['subnet_details'] and  vm in yaml_data['vpcs'][vpc]['subnet_details'][subnet]['vm_details']:
