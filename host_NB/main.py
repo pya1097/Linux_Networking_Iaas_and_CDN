@@ -7,6 +7,7 @@ import random
 import subprocess
 from fastapi.responses import JSONResponse
 from datetime import datetime
+import copy 
 
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, File, UploadFile
@@ -328,7 +329,9 @@ async def create_upload_subnet_file(file: UploadFile):
             yaml_data = yaml.safe_load(contents)
             yaml_data = transform_subnet_input(yaml_data)
 
-            id = create_or_update_subnet(yaml_data, "../database/database.json")
+            yaml_data_copy = copy.deepcopy(yaml_data)
+
+            id = create_or_update_subnet(yaml_data_copy, "../database/database.json")
 
             with open("../database/database.json", "r") as file:
                 orignal_data = json.load(file) 
@@ -466,7 +469,9 @@ async def create_upload_VMfile(file: UploadFile, python_content: UploadFile, dat
             yaml_data = yaml.safe_load(contents)
             yaml_data = transform_vm_input(yaml_data)
 
-            id = create_or_update_vm(yaml_data, "../database/database.json")
+            yaml_data_copy = copy.deepcopy(yaml_data)
+
+            id = create_or_update_vm(yaml_data_copy, "../database/database.json")
             
             with open("../database/database.json", "r") as file:
                 orignal_data = json.load(file) 
