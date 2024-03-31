@@ -7,24 +7,24 @@ import random
 app = Flask(__name__)
 
 # Static customer and VM details
-CUSTOMER_NAME = 'CDN'
-CUSTOMER_ID = 5
+CUSTOMER_NAME = 'cdn2'
+CUSTOMER_ID = 7
 VM_MEMORY = "1024"
 VM_VCPU = "1"
 python_file_path='user_data/source.py'
 optional_file_path='user_data/optional.txt'
 # Mapping of edge servers to their VPC IDsn
 edge_server_vpc_mapping = {
-    'INDIA': 'INDIA',
-    'AUS': 'AUS',
-    'USA': 'USA'
+    'india': 'india',
+    'aus': 'aus',
+    'uk': 'uk'
 }
 
 # Mapping of edge servers to their interfaces
 edge_server_interface_mapping = {
-    'INDIA': 've_c5v2_pns',
-    'AUS': 've_c5v3_pns',
-    'USA': 've_c5v4_pns'
+    'india': 've_c7v2_pns',
+    'aus': 've_c7v3_pns',
+    'uk': 've_c7v4_pns'
 }
 
 def generate_random_ip():
@@ -161,4 +161,4 @@ def get_data():
     return jsonify(data)
 
 if __name__ == '__main__':
-    app.run(host='30.30.30.2', port=8080)
+    app.run(host='53.53.53.2', port=8080)
