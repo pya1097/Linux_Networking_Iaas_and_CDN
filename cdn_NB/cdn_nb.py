@@ -16,14 +16,14 @@ optional_file_path='user_data/optional.txt'
 # Mapping of edge servers to their VPC IDsn
 edge_server_vpc_mapping = {
     'india': 'india',
-    'aus': 'aus',
+    'usa': 'usa',
     'uk': 'uk'
 }
 
 # Mapping of edge servers to their interfaces
 edge_server_interface_mapping = {
     'india': 've_c7v2_pns',
-    'aus': 've_c7v3_pns',
+    'usa': 've_c7v3_pns',
     'uk': 've_c7v4_pns'
 }
 
