@@ -11,7 +11,8 @@ CUSTOMER_NAME = 'CDN'
 CUSTOMER_ID = 5
 VM_MEMORY = "1024"
 VM_VCPU = "1"
-python_file_path='source.py'
+python_file_path='user_data/source.py'
+optional_file_path='user_data/optional.txt'
 # Mapping of edge servers to their VPC IDsn
 edge_server_vpc_mapping = {
     'INDIA': 'INDIA',
@@ -67,7 +68,6 @@ def create_and_upload_vm_yaml(edge_server_responses, tenant_name, file_location)
             'subnet_details': [{
                 'subnet_name': f"{tenant_name}_{edge_server['name']}",
                 'vm_details': [{'vm_name':f"{tenant_name}_{edge_server['name']}_vm", 'memory': VM_MEMORY, 'vcpu': VM_VCPU}],
-                'source_file_location': file_location
             }]
         })
 
@@ -118,15 +118,17 @@ def upload_yaml_vm(yaml_file_path, url):
         files['file'] = file
         with open(python_file_path, 'rb') as file2:
             files['python_content'] = file2
-            try:
-                response = requests.post(url, files=files)
-                response.raise_for_status()
-                print(f"{yaml_file_path} successfully uploaded. Server response:")
-                print(response.text)
-                return True
-            except requests.exceptions.RequestException as e:
-                print(f"Failed to upload {yaml_file_path}: {e}")
-                return False
+            with open(optional_file_path, 'rb') as file3:
+                files['data_content'] = file3
+                try:
+                    response = requests.post(url, files=files)
+                    response.raise_for_status()
+                    print(f"{yaml_file_path} successfully uploaded. Server response:")
+                    print(response.text)
+                    return True
+                except requests.exceptions.RequestException as e:
+                    print(f"Failed to upload {yaml_file_path}: {e}")
+                    return False
 
 @app.route('/init_gathering', methods=['POST'])
 def init_data_gathering():

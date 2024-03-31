@@ -15,3 +15,13 @@ curl -X POST -F "file=@/home/vmadm/project/host_NB/try.yaml" http://localhost:80
 
 
 curl -o create_user.yaml -X GET http://localhost:8000/downloadTemplate/create_user
+
+ curl -X POST   -H "Content-Type: application/json"   -d '{
+        "tenant_id": "6",
+        "tenant_name": "abc",
+        "vpc_id": "1",
+        "include_INDIA": "yes",
+        "include_AUS": "no",
+        "include_USA":"yes"
+      }'   http://30.30.30.2:8080/init_gathering
+
