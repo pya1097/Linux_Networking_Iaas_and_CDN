@@ -251,18 +251,34 @@ def transform_subnet_input(yaml_data):
 
 def create_or_update_subnet(yaml_data, json_file):
     resp = {}
+    dns_data = {}
     with open(json_file, "r") as file:
         existing_data = json.load(file)
 
+    
     for key, val in yaml_data['vpcs'].items():
         if 'subnet_details' in existing_data[yaml_data['customer_name']]['vpcs'][key]:
-            yaml_data['vpcs'][key]['subnet_details'], subnet_ids = add_subnet_ids(yaml_data['vpcs'][key]['subnet_details'],key,existing_data[yaml_data['customer_name']]['vpcs'][key]['subnet_details'])
+            yaml_data['vpcs'][key]['subnet_details'], subnet_ids = add_subnet_ids(yaml_data['vpcs'][key]['subnet_details'],key,dns_data,existing_data[yaml_data['customer_name']]['vpcs'][key]['subnet_details'])
         else:
-            yaml_data['vpcs'][key]['subnet_details'], subnet_ids = add_subnet_ids(yaml_data['vpcs'][key]['subnet_details'],key)
+            yaml_data['vpcs'][key]['subnet_details'], subnet_ids = add_subnet_ids(yaml_data['vpcs'][key]['subnet_details'],key,dns_data)
         resp.update(subnet_ids)
 
         existing_data[yaml_data['customer_name']]['vpcs'][key]['subnet_details'] = yaml_data['vpcs'][key]['subnet_details']
-    
+
+    if len(dns_data)!=0:
+        print(dns_data)
+        with open("../database/dns_db.json", "r") as file:
+            existing_data_dns = json.load(file)
+        for key, val in dns_data.items():
+            if(key in existing_data_dns):
+                existing_data_dns[key].update(val)
+            else:
+                print("hereeee",key)
+                existing_data_dns[key] = val
+
+        with open("../database/dns_db.json", "w") as file:
+            json.dump(existing_data_dns, file, indent=4)
+
     with open(json_file, "w") as file:
         json.dump(existing_data, file, indent=4)
 
@@ -270,9 +286,8 @@ def create_or_update_subnet(yaml_data, json_file):
     return resp
 
 
-def add_subnet_ids(yaml_data_vpc_data,vpc,existing_data=None):
+def add_subnet_ids(yaml_data_vpc_data,vpc,dns_data,existing_data=None):
     subnet_ids = {}
-    print(yaml_data_vpc_data,vpc)
     if not existing_data:
         i=1
         for key, val in yaml_data_vpc_data.items():
@@ -282,6 +297,10 @@ def add_subnet_ids(yaml_data_vpc_data,vpc,existing_data=None):
             val['_Status_'] = "IN_PROGRESS"
             subnet_ids[vpc+"_"+key] = i
             i+=1
+            if( ".com" in key):
+                tenant = key.split("_")[0]
+                dns_data[tenant] = {} if tenant not in dns_data else dns_data[tenant]
+                dns_data[tenant][key.split("_")[1]] = [val['incoming_dnat_routing_port'],"1.1.1.2"]
     else:
         n = len(existing_data)
         i=1
@@ -293,14 +312,16 @@ def add_subnet_ids(yaml_data_vpc_data,vpc,existing_data=None):
             subnet_ids[vpc+"_"+key] = n+i
             existing_data[key] = val
             i+=1
+            if( ".com" in key):
+                tenant = key.split("_")[0]
+                dns_data[tenant] = {} if tenant not in dns_data else dns_data[tenant]
+                dns_data[tenant][key.split("_")[1]] = [val['incoming_dnat_routing_port'],"1.1.1.2"]
         yaml_data_vpc_data = existing_data
     return yaml_data_vpc_data, subnet_ids
 
 
 @app.post("/uploadSubnetDetails/")
 async def create_upload_subnet_file(file: UploadFile):
-    print("I m here")
-
     if file.filename.endswith(".yaml"):
         contents = await file.read()
         try:
