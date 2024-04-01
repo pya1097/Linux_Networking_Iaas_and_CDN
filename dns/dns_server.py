@@ -10,7 +10,7 @@ def handle_request():
     with open('../database/countrymapping.json', 'r') as file:
         proximity = json.load(file)
 
-    with open("../database/dns_database.json", "r") as file:
+    with open("../database/dns_db.json", "r") as file:
         database = json.load(file)
 
     website = request.args.get("website")
