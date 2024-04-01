@@ -13,6 +13,7 @@ VM_MEMORY = "1024"
 VM_VCPU = "1"
 python_file_path='user_data/source.py'
 optional_file_path='user_data/optional.txt'
+file_path = 'user_data/random_numbers.txt'
 # Mapping of edge servers to their VPC IDsn
 edge_server_vpc_mapping = {
     'india': 'india',
@@ -31,6 +32,26 @@ def generate_random_ip():
     """Generate a random IP address within the 192.168.0.0/16 subnet."""
     return f"{random.randint(0, 255)}.{random.randint(0, 255)}.{random.randint(0, 255)}.0"
 
+def generate_unique_random_number(file_path):
+    # Generate a random 3-digit number
+    random_number = str(random.randint(100, 999))
+
+    # Check if the random number already exists in the file
+    with open(file_path, 'r') as file:
+        existing_numbers = file.read().splitlines()
+
+    while random_number in existing_numbers:
+        random_number = str(random.randint(100, 999))
+
+    # Append the random number to the file
+    with open(file_path, 'a') as file:
+        file.write(random_number + '\n')
+
+    return random_number
+
+# Example usage:
+unique_random_number = generate_unique_random_number(file_path)
+
 def create_and_upload_subnet_yaml(tenant_id, tenant_name, vpc_id, edge_server_responses):
     """Generates and uploads subnet YAML file."""
     data = {
@@ -43,7 +64,7 @@ def create_and_upload_subnet_yaml(tenant_id, tenant_name, vpc_id, edge_server_re
         data['vpcs'].append({
             'vpc_name': edge_server['vpc_id'],
             'subnet_details': [{
-                'subnet_name': f"{tenant_name}_{edge_server['name']}",
+                'subnet_name': f"{tenant_name}_{edge_server['name']}_{unique_random_number}",
                 'subnet_ip': generate_random_ip(),
                 'subnet_mask': 24
             }]
@@ -66,7 +87,7 @@ def create_and_upload_vm_yaml(edge_server_responses, tenant_name):
         yaml_data['vpcs'].append({
             'vpc_name': edge_server['vpc_id'],
             'subnet_details': [{
-                'subnet_name': f"{tenant_name}_{edge_server['name']}",
+                'subnet_name': f"{tenant_name}_{edge_server['name']}_{unique_random_number}",
                 'vm_details': [{'vm_name':f"{tenant_name}_{edge_server['name']}_vm", 'memory': VM_MEMORY, 'vcpu': VM_VCPU}],
             }]
         })
