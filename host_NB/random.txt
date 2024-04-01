@@ -33,11 +33,11 @@ curl -o create_user.yaml -X GET http://localhost:8000/downloadTemplate/create_us
       }'   http://30.30.30.2:8080/init_gathering
 
 curl -X POST   -H "Content-Type: application/json"   -d '{
-        "tenant_id": "8",
-        "tenant_name": "xyz.com",
+        "tenant_id": "10",
+        "tenant_name": "lnx.com",
         "vpc_id": "1",
-        "include_india": "yes",
-        "include_usa" : "no",
-        "include_uk":"yes"
-      }'   http://53.53.53.2:8080/init_gathering
+        "include_india": "no",
+        "include_usa" : "yes",
+        "include_uk":"no"
+      }'   http://70.70.70.2:8080/init_gathering
 

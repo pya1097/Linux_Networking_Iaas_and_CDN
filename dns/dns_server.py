@@ -22,10 +22,11 @@ def handle_request():
         dst_list = []
         for loc in database[website]:
             if server_location.lower() in loc.lower():
-                dst_list.append(database[website][server_location])
+                dst_list.append(database[website][loc])
         
         if dst_list:
             ip_address, port_number = random.choice(dst_list)
+            print(ip_address)
             return jsonify({website: {server_location: (port_number, ip_address)}})
         else:
             return jsonify({"error": "No server found at the specified location"})

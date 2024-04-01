@@ -6,12 +6,11 @@ import random
 
 app = Flask(__name__)
 
-
 # Static customer and VM details
-CUSTOMER_NAME = 'cdn2'
-CUSTOMER_ID = 7
-VM_MEMORY = "1024"
-VM_VCPU = "1"
+CUSTOMER_NAME = 'cdn3'
+CUSTOMER_ID = 9
+VM_MEMORY = "2048"
+VM_VCPU = "2"
 python_file_path='user_data/source.py'
 optional_file_path='user_data/optional.txt'
 file_path = 'user_data/random_numbers.txt'
@@ -24,9 +23,9 @@ edge_server_vpc_mapping = {
 
 # Mapping of edge servers to their interfaces
 edge_server_interface_mapping = {
-    'india': 've_c7v2_pns',
-    'usa': 've_c7v3_pns',
-    'uk': 've_c7v4_pns'
+    'india': 've_c9v2_pns',
+    'usa': 've_c9v3_pns',
+    'uk': 've_c9v4_pns'
 }
 
 def generate_random_ip():
@@ -51,9 +50,9 @@ def generate_unique_random_number(file_path):
     return random_number
 
 # Example usage:
-unique_random_number = generate_unique_random_number(file_path)
 
-def create_and_upload_subnet_yaml(tenant_id, tenant_name, vpc_id, edge_server_responses):
+
+def create_and_upload_subnet_yaml(tenant_id, tenant_name, vpc_id, edge_server_responses,unique_random_number):
     """Generates and uploads subnet YAML file."""
     data = {
         'customer_name': CUSTOMER_NAME,
@@ -65,7 +64,7 @@ def create_and_upload_subnet_yaml(tenant_id, tenant_name, vpc_id, edge_server_re
         data['vpcs'].append({
             'vpc_name': edge_server['vpc_id'],
             'subnet_details': [{
-                'subnet_name': f"{tenant_name}_{edge_server['name']}_{unique_random_number}",
+                'subnet_name': f"{tenant_name}_{edge_server['name']}{unique_random_number}",
                 'subnet_ip': generate_random_ip(),
                 'subnet_mask': 24
             }]
@@ -76,7 +75,7 @@ def create_and_upload_subnet_yaml(tenant_id, tenant_name, vpc_id, edge_server_re
 
     return upload_yaml('data.yaml', 'http://1.1.1.1:8000/uploadSubnetDetails')
 
-def create_and_upload_vm_yaml(edge_server_responses, tenant_name):
+def create_and_upload_vm_yaml(edge_server_responses, tenant_name,unique_random_number):
     """Generates and uploads VM YAML file."""
     yaml_data = {
         'customer_name': CUSTOMER_NAME,
@@ -88,7 +87,7 @@ def create_and_upload_vm_yaml(edge_server_responses, tenant_name):
         yaml_data['vpcs'].append({
             'vpc_name': edge_server['vpc_id'],
             'subnet_details': [{
-                'subnet_name': f"{tenant_name}_{edge_server['name']}_{unique_random_number}",
+                'subnet_name': f"{tenant_name}_{edge_server['name']}{unique_random_number}",
                 'vm_details': [{'vm_name':f"{tenant_name}_{edge_server['name']}_vm", 'memory': VM_MEMORY, 'vcpu': VM_VCPU}],
             }]
         })
@@ -154,6 +153,7 @@ def upload_yaml_vm(yaml_file_path, url):
 
 @app.route('/init_gathering', methods=['POST'])
 def init_data_gathering():
+    unique_random_number=generate_unique_random_number(file_path)
     data = request.json
     tenant_id = data.get('tenant_id')
     tenant_name = data.get('tenant_name')
@@ -167,8 +167,8 @@ def init_data_gathering():
             edge_server_responses.append({'name': edge_server, 'vpc_id': vpc})
 
     if tenant_id and tenant_name and vpc_id:
-        if create_and_upload_subnet_yaml(tenant_id, tenant_name, vpc_id, edge_server_responses):
-            if create_and_upload_vm_yaml(edge_server_responses, tenant_name):
+        if create_and_upload_subnet_yaml(tenant_id, tenant_name, vpc_id, edge_server_responses,unique_random_number):
+            if create_and_upload_vm_yaml(edge_server_responses, tenant_name,unique_random_number):
                 create_namespace_yaml(tenant_id, vpc_id, edge_server_responses)
         return jsonify({"message": "Data gathering and processing completed successfully"})
     else:
@@ -183,4 +183,4 @@ def get_data():
     return jsonify(data)
 
 if __name__ == '__main__':
-    app.run(host='53.53.53.2', port=8080)
+    app.run(host='70.70.70.2', port=8080)
