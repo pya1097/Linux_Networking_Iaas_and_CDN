@@ -46,9 +46,10 @@
       template:
         src: "{{ template_dir }}/network_definition.j2"
         dest: "{{ script_files_dir }}/{{ network_id }}/{{ network_id }}.xml"
+      become: yes
 
     - name: Define network using virsh
-      command: virsh net-define "{{ script_files_dir }}/{{ network_id }}/{{ network_id }}.xml"
+      command: sudo virsh net-define "{{ script_files_dir }}/{{ network_id }}/{{ network_id }}.xml"
       become: yes
 
     - name: Start the defined network

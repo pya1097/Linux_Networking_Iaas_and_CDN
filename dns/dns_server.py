@@ -3,16 +3,16 @@ import json, random
 
 app = Flask(__name__)
 
-
-with open('../database/mapping.json', 'r') as file:
-    proximity = json.load(file)
-
-with open("../database/dns_database.json", "r") as file:
-    database = json.load(file)
-
 # Route to handle client requests
 @app.route("/", methods=["GET"])
 def handle_request():
+    
+    with open('../database/countrymapping.json', 'r') as file:
+        proximity = json.load(file)
+
+    with open("../database/dns_database.json", "r") as file:
+        database = json.load(file)
+
     website = request.args.get("website")
     user_location = request.args.get("location")
     preferred_server = int(request.args.get("preferred_server"))
@@ -24,8 +24,12 @@ def handle_request():
             if server_location.lower() in loc.lower():
                 dst_list.append(database[website][server_location])
         
-        ip_address, port_number = random.choice(dst_list)
-        return jsonify({website: {server_location: (port_number, ip_address)}})
+        if dst_list:
+            ip_address, port_number = random.choice(dst_list)
+            return jsonify({website: {server_location: (port_number, ip_address)}})
+        else:
+            return jsonify({"error": "No server found at the specified location"})
+
     else:
         return jsonify({"error": "No matching data found"})
 
