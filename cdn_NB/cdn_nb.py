@@ -6,6 +6,7 @@ import random
 
 app = Flask(__name__)
 
+
 # Static customer and VM details
 CUSTOMER_NAME = 'cdn2'
 CUSTOMER_ID = 7
