@@ -82,11 +82,10 @@
     - name: Allow traffic between interface pairs
       become: yes
       ansible.builtin.command:
-        cmd: "ip netns exec {{ vpc_id }} iptables -I FORWARD 1 -i {{ veth_brv_br_inf }} -o {{ veth_brv_v_inf }} -j ACCEPT"
+        cmd: "ip netns exec {{ vpc_id }} iptables -I FORWARD 1 -i {{ veth_vpns_v_inf }} -o {{ veth_brv_v_inf }} -j ACCEPT"
       
 
     - name: Allow traffic between reverse interface pairs
       become: yes
       ansible.builtin.command:
-        cmd: "ip netns exec {{ vpc_id }} iptables -I FORWARD 1 -i {{ veth_brv_v_inf }} -o {{ veth_brv_br_inf }} -j ACCEPT"
-      
+        cmd: "ip netns exec {{ vpc_id }} iptables -I FORWARD 1 -i {{ veth_brv_v_inf }} -o {{ veth_vpns_v_inf }} -j ACCEPT"
