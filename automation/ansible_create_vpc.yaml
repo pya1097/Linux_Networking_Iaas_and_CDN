@@ -53,6 +53,10 @@
     - name: Add SNAT for public
       ansible.builtin.command: "sudo ip netns exec {{ pub_namespace }} iptables -t nat -I POSTROUTING 1 -s {{ vpc_subnet }} -o {{ public_route_inf }} ! -d {{ vpc_subnet }} -j MASQUERADE"
         
+    - name: Traffic isolation using packet dropping
+      become: yes
+      command: "sudo ip netns exec {{ vpc_id }} iptables -P FORWARD DROP"
+    
     - name: Add ACCEPT rule from VPC interface to Internet interface
       ansible.builtin.command: "sudo ip netns exec {{ pub_namespace }} iptables -I FORWARD -i {{ public_route_inf }} -o {{ ep_in_pub }} -j ACCEPT"
         

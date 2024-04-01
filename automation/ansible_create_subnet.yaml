@@ -77,3 +77,15 @@
 
     - name: Add NS IP rule for SNAT
       ansible.builtin.command: "sudo ip netns exec {{ vpc_id }} iptables -t nat -I POSTROUTING 1 -s {{ subnet_ip }} -o {{ veth_vpns_v_inf }} ! -d {{ subnet_ip }} -j MASQUERADE"
+
+    - name: Allow traffic between interface pairs
+      become: yes
+      ansible.builtin.command:
+        cmd: "ip netns exec {{ vpc_id }} iptables -I FORWARD 1 -i {{ veth_brv_br_inf }} -o {{ veth_brv_v_inf }} -j ACCEPT"
+      
+
+    - name: Allow traffic between reverse interface pairs
+      become: yes
+      ansible.builtin.command:
+        cmd: "ip netns exec {{ vpc_id }} iptables -I FORWARD 1 -i {{ veth_brv_v_inf }} -o {{ veth_brv_br_inf }} -j ACCEPT"
+      
