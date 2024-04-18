@@ -92,10 +92,21 @@
       template:
         src: "{{ template_dir }}/vm_definition.j2"
         dest: "{{ script_files_dir }}/{{ vm_id }}/{{ vm_id }}.xml"
+        
+    - name: Define a VM
+      community.libvirt.virt:
+        command: define
+        xml: "{{ lookup('file', script_files_dir + '/' + vm_id + '/' + vm_id + '.xml') }}"
+        autostart: true
+
+    - name: Start vm
+      community.libvirt.virt:
+        name: "{{ vm_id }}"
+        state: running
 
 
-    - name: create and start a VM
-      command: virsh create  "{{ script_files_dir }}/{{ vm_id }}/{{ vm_id }}.xml"
+    # - name: create and start a VM
+    #   command: virsh create  "{{ script_files_dir }}/{{ vm_id }}/{{ vm_id }}.xml"
    
     - name: Add a DNAT rule for the created VMs
       become: yes
