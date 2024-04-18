@@ -47,14 +47,26 @@
         src: "{{ template_dir }}/network_definition.j2"
         dest: "{{ script_files_dir }}/{{ network_id }}/{{ network_id }}.xml"
       become: yes
-
-    - name: Define network using virsh
-      command: sudo virsh net-define "{{ script_files_dir }}/{{ network_id }}/{{ network_id }}.xml"
+    
+    - name: Define network
+      community.libvirt.virt_net:
+        command: define
+        name: "{{ network_id }}"
+        xml: "{{ lookup('file', script_files_dir + '/' + network_id + '/' + network_id + '.xml') }}"
       become: yes
 
     - name: Start the defined network
-      command: "virsh net-start {{ network_id }}"
-      become: yes
+      community.libvirt.virt_net:
+        command: start
+        name: "{{ network_id }}"
+
+    # - name: Define network using virsh
+    #   command: sudo virsh net-define "{{ script_files_dir }}/{{ network_id }}/{{ network_id }}.xml"
+    #   become: yes
+
+    # - name: Start the defined network
+    #   command: "virsh net-start {{ network_id }}"
+    #   become: yes
 
    #----------------------------------- NAMESPACE Connection ---------------------------------------------------- 
     - name: Creat veth pairs between bridge and NS
