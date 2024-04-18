@@ -64,7 +64,7 @@ def create_and_upload_subnet_yaml(tenant_id, tenant_name, vpc_id, edge_server_re
         data['vpcs'].append({
             'vpc_name': edge_server['vpc_id'],
             'subnet_details': [{
-                'subnet_name': f"{tenant_name}_{edge_server['name']}_{unique_random_number}",
+                'subnet_name': f"{tenant_name}_{edge_server['name']}{unique_random_number}",
                 'subnet_ip': generate_random_ip(),
                 'subnet_mask': 24
             }]
@@ -87,7 +87,7 @@ def create_and_upload_vm_yaml(edge_server_responses, tenant_name,unique_random_n
         yaml_data['vpcs'].append({
             'vpc_name': edge_server['vpc_id'],
             'subnet_details': [{
-                'subnet_name': f"{tenant_name}_{edge_server['name']}_{unique_random_number}",
+                'subnet_name': f"{tenant_name}_{edge_server['name']}{unique_random_number}",
                 'vm_details': [{'vm_name':f"{tenant_name}_{edge_server['name']}_vm", 'memory': VM_MEMORY, 'vcpu': VM_VCPU}],
             }]
         })
